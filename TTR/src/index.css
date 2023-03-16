@@ -152,3 +152,7 @@ tr.spell-row:hover .spelltext{
   z-index: 2;
   border-radius: 5px;
 }
+
+.modal {
+  position: absolute;
+}

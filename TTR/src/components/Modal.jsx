@@ -3,6 +3,7 @@ import React, {useState} from "react";
 export default function Modal(props) {
 
     const body = <div className="modal">
+        <div className="close-modal" onClick={props.handleClick}>x</div>
         <div className="modal-header">
             <h2>{props.header}</h2>
         </div>
@@ -15,7 +16,7 @@ export default function Modal(props) {
     </div>
 
     return (
-        <div className="modal-shell">
+        <div className="modal-shell" tabIndex={0} onKeyDown={props.handleClick}>
             {props.visible && body}
         </div>
     )

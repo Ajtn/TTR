@@ -87,10 +87,11 @@ export default function FilterTable(props) {
     function rowClicked(event) {
         //find data corresponding to id in event
         const dataId = event.target.parentNode.attributes.dataid;
-        const data = tableData.map((entry) => {
-            if (entry._id == dataId)
+        const data = tableData.find((entry) => {
+            if (entry._id == dataId.value)
                 return entry;
         })
+        //setModal((oldModal) => ({visible: !oldModal.visible, rowData: data}));
         setModal({visible: true, rowData: data});
     }
     
@@ -111,6 +112,13 @@ export default function FilterTable(props) {
         return dataElements;
     }
 
+    function closeModal(event) {
+        console.log(event)
+        if (event._reactName !== "onKeyDown" || event.code === "Escape") {
+            setModal((oldModal) => ({...oldModal ,visible: !oldModal.visible}));
+        }
+    }
+
     const tBody = applyFilters();
 
     return (
@@ -129,7 +137,7 @@ export default function FilterTable(props) {
                     {tBody}
                 </tbody>
             </table>
-            <Modal header={modal.rowData.name} visible={modal.visible} >
+            <Modal handleClick={closeModal} header={modal.rowData.name} visible={modal.visible} >
                 <SpellData data={modal.rowData} />
             </Modal>
         </div>
