@@ -72,9 +72,6 @@ export default function FilterTable(props) {
         setData(dataDump.results);
     }
 
-    function nameRegex() {
-
-    }
 
     function updateSearch(event) {
         console.log(event.target.value)
