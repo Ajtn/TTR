@@ -6,8 +6,10 @@ import FilterSelect from "./FilterSelect";
 export default function SearchTable(props) {
     const [tableData, setTableData] = useState([]),
     [filters, setFilters] = useState({}),
-    [searchData, setSearchData] = useState({}),
+    [searchData, setSearchData] = useState(initialiseSearchData),
     [modal, setModal] = useState({visible: false, modalElements: []});
+
+    //const [searchData, setSearchData] = useState(props.filters.map());
 
     /*
         props {
@@ -31,60 +33,88 @@ export default function SearchTable(props) {
                 // if (! temp.includes(item) && )
 
 
+    //useEffect(initialiseSearchData, []);
+    useEffect(setupFilters, []);
+
+    function initialiseSearchData() {
+        //temp array to store each data type that will be used in search data (as defined by filters prop)
+        console.log("Initialise search data");
+        const searchCategory = [];
+        props.filters.map((filter) => {
+            searchCategory[filter.filterName] = "";
+        });
+        const tempSearch = {...searchCategory};
+        return tempSearch;
+    }
+
     function updateSearch(event) {
         console.log(event);
     }
     
     function setupFilters() {
+        console.log("setting up filters");
         const tempFilters = {};
         props.filters.map((filter) => {
-            const temp = [];
-            if (filter.pathInData.parentKey) {
-                dataDump.results.map((item) => {
-                    if (! temp.includes(item[filter.pathInData.parentKey][filter.pathInData.key]))
-                        temp.push(item[filter.pathInData.parentKey][filter.pathInData.key]);
-                })
-            } else {
-                dataDump.results.map((item) => {
-                    if (! temp.includes(item[filter.pathInData.key]))
-                        temp.push(item[filter.pathInData.key]);
-                })
+            if (filter.filterType === "select") {
+                const temp = [];
+                if (filter.pathInData.parentKey) {
+                    //** to do:
+                    //generalise JSON retrieval (currently using .value, this can be made into a prop if necessary)
+                    dataDump.results.map((item) => {
+                        if (! temp.includes(item[filter.pathInData.parentKey][filter.pathInData.key].value))
+                            temp.push(item[filter.pathInData.parentKey][filter.pathInData.key].value);
+                    })
+                } else {
+                    dataDump.results.map((item) => {
+                        if (! temp.includes(item[filter.pathInData.key]))
+                            temp.push(item[filter.pathInData.key]);
+                    })
+                }
+                tempFilters[filter.filterName] = {...filter, filterOptions: temp};
             }
-            tempFilters[filter.name] = temp;
+
         });
+        console.log("temp filters");
+        console.log(tempFilters);
         setFilters(tempFilters);
-        setTableData(dataDump);
+        setTableData(dataDump.results);
     }
 
     function tableBody() {
+        console.log("Filters: ");
+        console.log(filters);
         const dataElements = tableData.map((data) => {
-            filters.map((filter) => {
-                if (filter.filterType === "select") {
-                    if (filter.pathInData.parentKey) {
-                        if (searchData[filter.filterName] != 0 && data[filter.pathInData.parentKey][filter.pathInData.key] != searchData[filter.filterName]) {
+            for (const [filterName, value] of Object.entries(filters)) {
+                console.log("filter: ");
+                console.log(value);
+                if (value.filterType === "select") {
+                    if (value.pathInData.parentKey) {
+                        if (searchData[value.filterName] != 0 && data[value.pathInData.parentKey][value.pathInData.key] != searchData[value.filterName]) {
                             return false;
                         }
                     } else {
-                        if (searchData[filter.filterName] != 0 && data[filter.pathInData.key] != searchData[filter.filterName]) {
+                        if (searchData[value.filterName] != 0 && data[value.pathInData.key] != searchData[value.filterName]) {
                             return false;
                         }
                     }
                 } else {
-                    if (!data[filter.filterName].toUpperCase().match(searchData[filter.filterName].toUpperCase())) {
+                    // console.log("data: ");
+                    // console.log(value);
+                    if (!data[value.filterName].toUpperCase().match(searchData[value.filterName].toUpperCase())) {
                         return false;
                     }
                 }
                 return (
                     <DataRow key={data._id} data={data} handleClick={rowClicked} />
                 )
+            }
 
-            });
+            function rowClicked() {
+                console.log("test");
+            }
         });
+        return <tbody>{dataElements}</tbody>;
     }
-
-    useEffect(setupFilters, []);
-    console.log("Search data: ");
-    console.log(searchData);
 
     const tBody = tableBody(),
     tHead = props.filters.map((filter) => {
@@ -95,18 +125,17 @@ export default function SearchTable(props) {
                 </td>
             )
         } else {
-            console.log(filter);
             return (
-                <FilterSelect name={filter.filterName} filterData={searchData[filter.filterName]} handleChange={updateSearch} />
+                <FilterSelect name={filter.filterName} filterData={filter.filterOptions} handleChange={updateSearch} />
             )
         }
     });
 
     return (
-        <div>
-            <tr>{tHead}</tr>
-            <tr>{tBody}</tr>
-        </div>
+        <table>
+            <thead><tr>{tHead}</tr></thead>
+            {tBody}
+        </ table>
     )
 
 }
