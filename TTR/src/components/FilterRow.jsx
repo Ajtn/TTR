@@ -2,12 +2,13 @@ import React from "react";
 import FilterSelect from "./FilterSelect";
 
 export default function FilterRow(props) {
+    console.log(props.searchElements)
 
     const filters =  props.searchElements.map((element) => {
-        if (element.type === "select") { 
-            return <FilterSelect name={element.name} filterData={element.filterData} />
+        if (element.filterType === "select") { 
+            return <FilterSelect name={element.filterName} filterData={element.filterData} />
         } else {
-            return <input name={element.name} placeholder={element.name} value={searchData.name} onChange={updateSearch} />
+            return <td className={`filter-td-top-row td-${element.filterName}`}><input name={element.filterName} placeholder={element.filterName} value={searchData.name} onChange={updateSearch} /></td>
         }
         
     })

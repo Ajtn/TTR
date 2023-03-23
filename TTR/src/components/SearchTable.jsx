@@ -23,17 +23,16 @@ export default function SearchTable(props) {
             
     */
 
-    //todo: Make this function generic, ie read in chosen filters from filters prop object and use them to populate filters state variable from pulled data
-    //      prop needs to include
+    /*
+        Todo:
+            -Finish making component generic
+                -DataRow is a subcomponent that hardcodes value for spell data
+                -setupFilters appends .value to access values associated with data
+            -setup change functions to modify searchData
+            -improve style
+                -CSS hardcoded with class names
 
-                    // Object.keys(item).some((key) => {
-                //     if (key == filter.name)
-                //         return key;
-                // });
-                // if (! temp.includes(item) && )
-
-
-    //useEffect(initialiseSearchData, []);
+    */
     useEffect(setupFilters, []);
 
     function initialiseSearchData() {
@@ -48,8 +47,9 @@ export default function SearchTable(props) {
     }
 
     function updateSearch(event) {
-        console.log(event);
+        setSearchData(oldSearch => ({...oldSearch, [event.target.name]: event.target.value}));
     }
+
     
     function setupFilters() {
         console.log("setting up filters");
@@ -74,19 +74,17 @@ export default function SearchTable(props) {
             }
 
         });
-        console.log("temp filters");
         console.log(tempFilters);
         setFilters(tempFilters);
         setTableData(dataDump.results);
     }
 
+    console.log("filters: ");
+    console.log(filters);
+
     function tableBody() {
-        console.log("Filters: ");
-        console.log(filters);
         const dataElements = tableData.map((data) => {
             for (const [filterName, value] of Object.entries(filters)) {
-                console.log("filter: ");
-                console.log(value);
                 if (value.filterType === "select") {
                     if (value.pathInData.parentKey) {
                         if (searchData[value.filterName] != 0 && data[value.pathInData.parentKey][value.pathInData.key] != searchData[value.filterName]) {
@@ -105,31 +103,47 @@ export default function SearchTable(props) {
                     }
                 }
                 return (
-                    <DataRow key={data._id} data={data} handleClick={rowClicked} />
+                    <DataRow key={data._id} data={data} handleClick={updateSearch} />
                 )
             }
 
-            function rowClicked() {
-                console.log("test");
-            }
+
         });
-        return <tbody>{dataElements}</tbody>;
+        return <tbody className="searchTable-tbody">{dataElements}</tbody>;
     }
 
-    const tBody = tableBody(),
-    tHead = props.filters.map((filter) => {
-        if (filter.filterType !== "select") {
-            return (
-                <td className={`filter-td ${filter.name}`}>
-                    <input name={filter.filterName} placeholder={filter.filterName} value={searchData[filter.filterName]} onChange={updateSearch} />
-                </td>
-            )
-        } else {
-            return (
-                <FilterSelect name={filter.filterName} filterData={filter.filterOptions} handleChange={updateSearch} />
-            )
-        }
-    });
+    const tBody = tableBody();
+
+    if (filters) {
+        const tHead = filters.map((filter) => {
+            if (filter.filterType !== "select") {
+                return (
+                    <td key={filter.filterName} className={`filter-td td-${filter.filterName}`}>
+                        <input name={filter.filterName} placeholder={filter.filterName} value={searchData[filter.filterName]} onChange={updateSearch} />
+                    </td>
+                )
+            } else {
+                return (
+                    <FilterSelect key={filter.filterName} name={filter.filterName} filterData={filter.filterOptions} handleChange={updateSearch} />
+                )
+            }
+        });
+    }
+
+
+    // const tHead = props.filters.map((filter) => {
+    //     if (filter.filterType !== "select") {
+    //         return (
+    //             <td key={filter.filterName} className={`filter-td td-${filter.filterName}`}>
+    //                 <input name={filter.filterName} placeholder={filter.filterName} value={searchData[filter.filterName]} onChange={updateSearch} />
+    //             </td>
+    //         )
+    //     } else {
+    //         return (
+    //             <FilterSelect key={filter.filterName} name={filter.filterName} filterData={filter.filterOptions} handleChange={updateSearch} />
+    //         )
+    //     }
+    // });
 
     return (
         <table>

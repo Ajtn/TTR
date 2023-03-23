@@ -105,35 +105,41 @@ tr:nth-child(odd) {
 
 td.filter-td-top-row {
   overflow: hidden;
+  display: inline-flex;
 }
 
-td.td-name {
+td.td-names {
   width: 225px;
   overflow: hidden;
   z-index: 1;
 }
 
-td.td-level {
+td.td-levels {
   width: 115px;
   z-index: 1;
 }
 
-td.td-school {
+td.td-schools {
   width: 180px;
   z-index: 1;
 }
 
 td.spelltext {
+  display: hidden;
   visibility: hidden;
   position: absolute;
 }
 
 .spell-row {
   position: relative;
-  display: inline-table;
+  display: flex;
   width: 100vw;
   border-style: none;
   padding: 2px;
+}
+
+.spell-row > td {
+  flex: 1;
 }
 
 tr.spell-row:hover{
@@ -152,6 +158,7 @@ tr.spell-row:hover .spelltext{
   z-index: 2;
   border-radius: 5px;
 }
+
 
 .modal {
   position: absolute;
