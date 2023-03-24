@@ -16,13 +16,6 @@ export default function DataRow(props) {
             <td className="td-level td-info">{props.data.system.level.value}</td>
             <td className="td-school td-info">{props.data.system.school.value}</td>
             <td className="td-source td-info">{props.data.system.source.value}</td>
-            <td className="spelltext td-info">
-                <div>
-                    <h2 className="spelltext-heading">{props.data.name}</h2>
-                    <h4 className="spelltext-info">Components: {components}</h4>
-                    <div className="spelltext-body" dangerouslySetInnerHTML={{__html: props.data.system.description.value}}></div>
-                </div>
-            </td>
         </tr>
     )
 }
