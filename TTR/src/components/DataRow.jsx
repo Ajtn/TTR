@@ -1,21 +1,19 @@
 import React from "react";
 
+//props:
+//  -dataForDisplay: [name, level, school, source]
+//  -handleClick: updateSearch
+//  -id: json identifier
+//*may want to turn data into objects instead of raw values to have access to keys (for classname)
 export default function DataRow(props) {
-    let components = "";
-    if (props.data.system.components.focus)
-        components = components + "f";
-    if (props.data.system.components.material)
-        components = components + "m";
-    if (props.data.system.components.somatic)
-        components = components + "s";
-
+    const keys = Object.keys(props.dataForDisplay);
+    const tdElements = keys.map((key) => {
+        return <td key={key} className={`td-info td-${key}`}>{props.dataForDisplay[key]}</td>
+    })
 
     return (
-        <tr onClick={props.handleClick} dataid={props.data._id} className="spell-row">
-            <td className="td-name td-info">{props.data.name}</td>
-            <td className="td-level td-info">{props.data.system.level.value}</td>
-            <td className="td-school td-info">{props.data.system.school.value}</td>
-            <td className="td-source td-info">{props.data.system.source.value}</td>
+        <tr onClick={props.handleClick} dataid={props.id} className="search-table data-row">
+            {tdElements}
         </tr>
     )
 }

@@ -130,7 +130,7 @@ td.spelltext {
   position: absolute;
 }
 
-.spell-row {
+.data-row {
   position: relative;
   display: flex;
   width: 100vw;
@@ -138,18 +138,18 @@ td.spelltext {
   padding: 2px;
 }
 
-.spell-row > td {
+.data-row > td {
   flex: 1;
 }
 
-tr.spell-row:hover{
+tr.data-row:hover{
   border-color: white;
   padding: 0px;
   border-style:solid;
   border-width: 2px;
 }
 
-tr.spell-row:hover .spelltext{
+tr.data-row:hover .spelltext{
   background-color: antiquewhite;
   visibility: visible;
   left: 20%;
