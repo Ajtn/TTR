@@ -12,7 +12,7 @@ export default function DataRow(props) {
     })
 
     return (
-        <tr onClick={props.handleClick} dataid={props.id} className="search-table data-row">
+        <tr onClick={props.handleClick} className={`${props.id} search-table data-row`}>
             {tdElements}
         </tr>
     )

@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-import FilterTable from "./components/FilterTable";
 import SearchTable from "./components/SearchTable";
 import dataDump from "./assets/dataDump";
 
@@ -19,9 +17,34 @@ function App() {
     {filterName: "source", filterType: "select", extension: "value"}
   ];
 
+  const modalFields = [
+    {objectField: "name", displayAs: "h2"},
+    {objectField: "components", displayAs: "p"},
+    {objectField: "description", displayAs: "p"},
+  ];
+
+  const apiInfo = {
+    local: false,
+    api: {
+      //url: "https://api.pathfinder2.fr/v1/pf2/spell",
+      requestConfig: {
+        method: "GET",
+        headers: {
+          Authorization: "5cfe0fea-a504-4ee4-8f88-baf84aeabef2"
+        }
+      }
+
+    },
+    pathToData: ["results"]
+  };
+
+  const localData = {
+    local: true, data: dataDump, pathToData:["results"]
+  };
+
   return (
     <div className="App">
-      <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={{local: true, data: dataDump}} />
+      <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={localData} modalFields={modalFields} />
     </div>
   )
 }
