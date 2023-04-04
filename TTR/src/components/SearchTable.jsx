@@ -144,9 +144,10 @@ export default function SearchTable(props) {
     function rowClicked(event) {
         const rowId = event.target.parentNode.classList[0];
         const modalData = props.modalFields.map((field) => {
-            return tableData[rowId][field.name];
+            return findValue(tableData[rowId], field.objectField, field.extension)
         });
-        setModal(true, modalData);
+
+        setModal({visible: true, modalElements: modalData});
     }
 
     //checks each data element against current search values and generates jsx for elements that aren't filtered out
@@ -174,8 +175,8 @@ export default function SearchTable(props) {
                     <DataRow key={dKey} id={dKey} dataForDisplay={tableFields} handleClick={rowClicked} />
                 );
             }
-        }
             displayElement = true;
+        }
         return <tbody className="searchTable-tbody">{dataElements}</tbody>;
     }
 
@@ -205,7 +206,7 @@ export default function SearchTable(props) {
                 <thead><tr>{tHead}</tr></thead>
                 {tBody}
             </ table>
-            <Modal head={[]}/>
+            <Modal visible={modal.visible} head={modal.modalElements}/>
         </>
     )
 

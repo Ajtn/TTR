@@ -19,8 +19,7 @@ function App() {
 
   const modalFields = [
     {objectField: "name", displayAs: "h2"},
-    {objectField: "components", displayAs: "p"},
-    {objectField: "description", displayAs: "p"},
+    {objectField: "description", displayAs: "p", extension: "value"},
   ];
 
   const apiInfo = {

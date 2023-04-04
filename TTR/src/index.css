@@ -160,6 +160,13 @@ tr.data-row:hover .spelltext{
 }
 
 
-.modal {
+.modal-shell {
   position: absolute;
+  background-color: antiquewhite;
+  visibility: visible;
+  left: 20%;
+  top: 50%;
+  width: 70%;
+  z-index: 2;
+  border-radius: 5px;
 }

@@ -1,10 +1,16 @@
 import React, {useState} from "react";
 
 export default function Modal(props) {
-
-    const hElements = props.head.map((data) => {
-        return <p className="modal-content">{data}</p>
-    });
+    /*
+        todo:
+            -setup more appropriate keys
+            -implement different sections of modal
+                -can filter here or in search table (ie pass lists of pre filtered data or pass data object with position name)
+    */
+    let hElements = [];
+    
+    if (props.head)
+        hElements = props.head.map((data) => <p key={data} className="modal-content">{data}</p>);
 
     function heading(content) {
         return <h1 className="modal-heading">{content}</h1>
