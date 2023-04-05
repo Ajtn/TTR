@@ -38,9 +38,8 @@ export default function Modal(props) {
         }
     }
 
-
-    const body = <div className="modal">
-        <div className="close-modal" onClick={props.handleClick}>x</div>
+    const body = <>
+        <div className="close-modal" onClick={props.closeFunction}>x</div>
         <div className="modal-header">
             {hElements}
         </div>
@@ -50,10 +49,10 @@ export default function Modal(props) {
         <div className="modal-footer">
             {fElements}
         </div>
-    </div>
+    </>
 
     return (
-        <div className="modal-shell" tabIndex={0} onKeyDown={props.handleClick}>
+        <div className="modal-shell">
             {props.modalData.visible && body}
         </div>
     )

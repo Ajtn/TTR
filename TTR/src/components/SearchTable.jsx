@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from "react";
-//import dataDump from "../assets/dataDump";
 import DataRow from "./DataRow";
 import FilterSelect from "./FilterSelect";
 import Modal from "./Modal";
@@ -24,7 +23,6 @@ export default function SearchTable(props) {
                 {objectField: 'name', displayAs: 'h2', modalSection: "head"},
                 {objectField: 'description', extension: "value", displayAs: 'p', modalSection: "body"},
             ]
-
         }
             
     */
@@ -39,7 +37,16 @@ export default function SearchTable(props) {
     */
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
     useEffect(initFilters, [tableData]);
+    //create event listener to check for keypress to close modal
+    useEffect(() => {
+        window.addEventListener("keydown", closeModal);
+        return () => {
+            window.removeEventListener("keydown", closeModal);
+        };
+    }, []);
 
+    //initialise filter state object based on fields chosen in filters prop and unique values associated with those fields found in data source
+    //ie any filters set to select will have options defined by unique values found in data 
     function initFilters() {
         const tempFilters = {};
         props.filters.map((filter) => {
@@ -57,6 +64,12 @@ export default function SearchTable(props) {
         setFilters(tempFilters);
     }
 
+    //hides modal if escape is pressed or if x is clicked in modal
+    function closeModal(event) {
+        if (! event.code || event.code === "Escape")
+            setModal((oldModal) => ({...oldModal, visible: false}));
+    }
+    
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
     function initLocalData() {
@@ -93,9 +106,8 @@ export default function SearchTable(props) {
             return node[pathClone.pop()];
     }
 
+    //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData() {
-        //temp array to store each data type that will be used in search data (as defined by filters prop)
-        console.log("Initialise search data");
         const searchCategory = [];
         props.filters.map((filter) => {
             searchCategory[filter.filterName] = "";
@@ -103,7 +115,6 @@ export default function SearchTable(props) {
         const tempSearch = {...searchCategory};
         return tempSearch;
     }
-
 
     function updateSearch(event) {
         setSearchData(oldSearch => ({...oldSearch, [event.target.name]: event.target.value}));
@@ -205,8 +216,7 @@ export default function SearchTable(props) {
                 <thead><tr>{tHead}</tr></thead>
                 {tBody}
             </ table>
-            <Modal modalData={modal}/>
+            <Modal modalData={modal} closeFunction={closeModal}/>
         </>
     )
-
 }
