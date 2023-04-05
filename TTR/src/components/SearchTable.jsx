@@ -21,8 +21,8 @@ export default function SearchTable(props) {
             ],
             dataSource: {local: false, path: "Exampleurl.com", headers: {auth: pass}, method: "get"},
             modalFields: [
-                {objectField: 'name', displayAs: 'h2'},
-                {objectField: 'description', extension: "value", displayAs: 'p'},
+                {objectField: 'name', displayAs: 'h2', modalSection: "head"},
+                {objectField: 'description', extension: "value", displayAs: 'p', modalSection: "body"},
             ]
 
         }
@@ -36,9 +36,6 @@ export default function SearchTable(props) {
             -reordering elements
                 -auto reordering filter select options
                 -option to order table rows by filter
-            -make modal display additional data (as defined by modal prop)
-
-
     */
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
     useEffect(initFilters, [tableData]);
@@ -139,15 +136,17 @@ export default function SearchTable(props) {
         return columns;
     }
 
-
-    //configures modal based on rows being clicked and modal prop
+    //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
     function rowClicked(event) {
         const rowId = event.target.parentNode.classList[0];
-        const modalData = props.modalFields.map((field) => {
-            return findValue(tableData[rowId], field.objectField, field.extension)
+        const modalElements = props.modalFields.map((field) => {
+            return {
+                ...field,
+                value: findValue(tableData[rowId], field.objectField, field.extension),
+            };
         });
 
-        setModal({visible: true, modalElements: modalData});
+        setModal({visible: true, modalElements: modalElements});
     }
 
     //checks each data element against current search values and generates jsx for elements that aren't filtered out
@@ -206,7 +205,7 @@ export default function SearchTable(props) {
                 <thead><tr>{tHead}</tr></thead>
                 {tBody}
             </ table>
-            <Modal visible={modal.visible} head={modal.modalElements}/>
+            <Modal modalData={modal}/>
         </>
     )
 

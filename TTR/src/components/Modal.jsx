@@ -3,43 +3,58 @@ import React, {useState} from "react";
 export default function Modal(props) {
     /*
         todo:
-            -setup more appropriate keys
-            -implement different sections of modal
-                -can filter here or in search table (ie pass lists of pre filtered data or pass data object with position name)
+            -implement button option
     */
-    let hElements = [];
-    
-    if (props.head)
-        hElements = props.head.map((data) => <p key={data} className="modal-content">{data}</p>);
-
-    function heading(content) {
-        return <h1 className="modal-heading">{content}</h1>
+    //define element arrays for head, body, and foot section of modal
+    const hElements = [],
+    bElements = [],
+    fElements = [];
+    //populate each array with elements based on the modalSection field of object defined in props
+    for (const key in props.modalData.modalElements) {
+        switch (props.modalData.modalElements[key].modalSection) {
+            case "head":
+                hElements.push(createElement(props.modalData.modalElements[key]));
+                break;
+            case "body":
+                bElements.push(createElement(props.modalData.modalElements[key]));
+                break;
+            case "foot":
+                fElements.push(createElement(props.modalData.modalElements[key]));
+                break;
+        }
+    }
+    //create html as defined by displayAs field of object defined in props
+    function createElement(fieldData) {
+        switch (fieldData.displayAs) {
+            case "h1":
+                return <h1 key={fieldData.objectField} className={`modal-h1 modal-${fieldData.modalSection}`}>{fieldData.value}</h1>;
+                break;
+            case "h2":
+                return <h2 key={fieldData.objectField} className={`modal-h2 modal-${fieldData.modalSection}`}>{fieldData.value}</h2>;
+                break;
+            case "p":
+                return <p key={fieldData.objectField} className={`modal-p modal-${fieldData.modalSection}`}>{fieldData.value}</p>;
+                break;
+        }
     }
 
-    function subHeading(content) {
-        return <h2 className="modal-subheading">{content}</h2>
-    }
-
-    function paragraph(content) {
-        return <p className="modal-paragraph">{content}</p>
-    }
 
     const body = <div className="modal">
         <div className="close-modal" onClick={props.handleClick}>x</div>
         <div className="modal-header">
-            <h2>{props.header}</h2>
+            {hElements}
         </div>
         <div className="moldal-body">
-            {props.children}
+            {bElements}
         </div>
         <div className="modal-footer">
-            {typeof props.buttons !== "undefined" && props.buttons.map(button => <button onClick={button.handleClick}>{button.text}</button>)}
+            {fElements}
         </div>
     </div>
 
     return (
         <div className="modal-shell" tabIndex={0} onKeyDown={props.handleClick}>
-            {props.visible && hElements}
+            {props.modalData.visible && body}
         </div>
     )
 }

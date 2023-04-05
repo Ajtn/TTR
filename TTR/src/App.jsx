@@ -3,12 +3,6 @@ import dataDump from "./assets/dataDump";
 
 
 function App() {
-  // const filterOptions = [
-  //   {filterName: "name", filterType: "inputType", pathInData: {key: "name", parentKey: null}},
-  //   {filterName: "levels", filterType: "select", filterOptions: ["option 1", "option 2"], pathInData: {key: "level", parentKey: "system"}},
-  //   {filterName: "schools", filterType: "select", filterOptions: ["option 1", "option 2"], pathInData: {key: "school", parentKey: "system"}},
-  //   {filterName: "sources", filterType: "select", filterOptions: ["option 1", "option 2"], pathInData: {key: "source", parentKey: "system"}}
-  // ];
 
   const filterOptions = [
     {filterName: "name", filterType: "inputType"},
@@ -18,8 +12,8 @@ function App() {
   ];
 
   const modalFields = [
-    {objectField: "name", displayAs: "h2"},
-    {objectField: "description", displayAs: "p", extension: "value"},
+    {objectField: "name", displayAs: "h2", modalSection: "head"},
+    {objectField: "description", displayAs: "p", extension: "value", modalSection: "body"},
   ];
 
   const apiInfo = {
