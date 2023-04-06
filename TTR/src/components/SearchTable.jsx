@@ -35,15 +35,23 @@ export default function SearchTable(props) {
                 -auto reordering filter select options
                 -option to order table rows by filter
     */
+
+   //initialise tableData state object based on either local data or API
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
     useEffect(initFilters, [tableData]);
     //create event listener to check for keypress to close modal
-    useEffect(() => {
+    useEffect(initKeyListener, []);
+
+    console.log("test");
+    //console.log(searchData.orderBy);
+    useEffect(sortTable, [searchData.orderBy]);
+
+    function initKeyListener() {
         window.addEventListener("keydown", closeModal);
         return () => {
             window.removeEventListener("keydown", closeModal);
         };
-    }, []);
+    }
 
     //initialise filter state object based on fields chosen in filters prop and unique values associated with those fields found in data source
     //ie any filters set to select will have options defined by unique values found in data 
@@ -69,14 +77,14 @@ export default function SearchTable(props) {
         if (! event.code || event.code === "Escape")
             setModal((oldModal) => ({...oldModal, visible: false}));
     }
-    
+
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
     function initLocalData() {
         const tempData = [];
         const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
         for (const key in unsorted)
-            tempData[findValue(unsorted[key], props.id.fieldName, props.id.extension)] = unsorted[key];
+            tempData.push(unsorted[key]);
 
         setTableData(tempData);
     }
@@ -89,7 +97,7 @@ export default function SearchTable(props) {
             const tempData = [];
             const unsorted = followObjPath(data, props.dataSource.pathToData);
             for (const key in unsorted)
-                tempData[findValue(unsorted[key], props.id.fieldName, props.id.extension)] = unsorted[key];
+                tempData.push(unsorted[key]);
 
             console.log("temp data in api call");
             console.log(tempData);
@@ -112,12 +120,58 @@ export default function SearchTable(props) {
         props.filters.map((filter) => {
             searchCategory[filter.filterName] = "";
         });
-        const tempSearch = {...searchCategory};
+        const tempSearch = {...searchCategory, orderBy: {invert: false}};
         return tempSearch;
     }
 
     function updateSearch(event) {
         setSearchData(oldSearch => ({...oldSearch, [event.target.name]: event.target.value}));
+    }
+
+    //sorts tableData by filter stored in searchData (modified by clicking icon next to filter)
+    function sortTable() {
+        if (tableData) {
+            setTableData((oldData) => {
+                oldData.sort((x, y) => {
+                    const xVal = findValue(x, searchData.orderBy.fieldName, searchData.orderBy.extension);
+                    const yVal = findValue(y, searchData.orderBy.fieldName, searchData.orderBy.extension);
+                    if (typeof xVal === "string")
+                        return xVal.localeCompare(yVal);
+                    else if (typeof xVal === "number") {
+                        if (xVal > yVal)
+                            return 1;
+                        else if (xVal < yVal)
+                            return -1;
+                        else
+                            return 0;
+                    } else
+                        return 0;
+                });
+                if (! searchData.orderBy.invert)
+                    oldData.reverse();
+                return oldData;
+            });
+        }
+    }
+
+    //function called when icon clicked next to filter elements
+    //sets orderBy which is a dependancy for orderBy function
+    function setOrder(event) {
+        const chosenFilter = props.filters.find((filter) => {
+            if (filter.filterName === event.target.classList[0])
+                return filter;
+        });
+
+        setSearchData((oldSearch) => {
+            return ({
+                ...oldSearch,
+                orderBy:{
+                    fieldName: chosenFilter.filterName,
+                    extension: chosenFilter.extension,
+                    invert: oldSearch.orderBy.invert ? false : true
+                }
+            });
+        });
     }
 
     //recursive function to find a value in an object given a unique key name (target)
@@ -150,13 +204,17 @@ export default function SearchTable(props) {
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
     function rowClicked(event) {
         const rowId = event.target.parentNode.classList[0];
+        let clickedRow = {};
+        tableData.some((rowData) => {
+            if (findValue(rowData, props.id.fieldName, props.id.extension) === rowId)
+                clickedRow = rowData;
+        });
         const modalElements = props.modalFields.map((field) => {
             return {
                 ...field,
-                value: findValue(tableData[rowId], field.objectField, field.extension),
+                value: findValue(clickedRow, field.objectField, field.extension),
             };
         });
-
         setModal({visible: true, modalElements: modalElements});
     }
 
@@ -181,8 +239,9 @@ export default function SearchTable(props) {
             });
             if (displayElement) {
                 const tableFields = getRowData(tableData[dKey]);
+                const rowId = findValue(tableData[dKey], props.id.fieldName, props.id.extension)
                 dataElements.push(
-                    <DataRow key={dKey} id={dKey} dataForDisplay={tableFields} handleClick={rowClicked} />
+                    <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked} />
                 );
             }
             displayElement = true;
@@ -195,19 +254,18 @@ export default function SearchTable(props) {
     const tHead = [];
     if (Object.keys(filters).length > 0) {
         for (const [filterName, filterData] of Object.entries(filters)) {
-            if (filterData.filterType !== "select") {
-                tHead.push(
-                    <td key={filterName} className={`filter-td td-${filterName}`}>
-                        <input name={filterName} placeholder={filterName} value={searchData[filterName]} onChange={updateSearch} />
-                    </td>
-                )
-            } else {
-                tHead.push(
-                    <FilterSelect key={filterName} name={filterName} filterData={filterData.filterOptions} handleChange={updateSearch} />
-                )
-            }
+            tHead.push(
+                <FilterSelect
+                    key={filterName}
+                    name={filterName}
+                    type={filterData.filterType}
+                    value={searchData[filterName]}
+                    filterData={filterData.filterOptions}
+                    handleChange={updateSearch}
+                    sort={setOrder}
+                />
+            );
         }
-
     }
 
     return (
