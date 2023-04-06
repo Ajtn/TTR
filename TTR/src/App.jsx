@@ -6,6 +6,7 @@ function App() {
 
   const filterOptions = [
     {filterName: "name", filterType: "inputType"},
+    {filterName: "spellType", filterType: "select", extension: "value"},
     {filterName: "level", filterType: "select", extension: "value"},
     {filterName: "school", filterType: "select", extension: "value"},
     {filterName: "source", filterType: "select", extension: "value"}
@@ -13,6 +14,7 @@ function App() {
 
   const modalFields = [
     {objectField: "name", displayAs: "h2", modalSection: "head"},
+    {objectField: "spellType", displayAs: "h2", modalSection: "head", extension:"value"},
     {objectField: "description", displayAs: "p", extension: "value", modalSection: "body"},
   ];
 

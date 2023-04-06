@@ -42,7 +42,6 @@ export default function SearchTable(props) {
     //create event listener to check for keypress to close modal
     useEffect(initKeyListener, []);
 
-    console.log("test");
     //console.log(searchData.orderBy);
     useEffect(sortTable, [searchData.orderBy]);
 
@@ -157,8 +156,9 @@ export default function SearchTable(props) {
     //function called when icon clicked next to filter elements
     //sets orderBy which is a dependancy for orderBy function
     function setOrder(event) {
+        console.log(event.target.parentNode.classList);
         const chosenFilter = props.filters.find((filter) => {
-            if (filter.filterName === event.target.classList[0])
+            if (filter.filterName === event.target.parentNode.classList[0])
                 return filter;
         });
 
@@ -263,6 +263,7 @@ export default function SearchTable(props) {
                     filterData={filterData.filterOptions}
                     handleChange={updateSearch}
                     sort={setOrder}
+                    selected={searchData.orderBy}
                 />
             );
         }
