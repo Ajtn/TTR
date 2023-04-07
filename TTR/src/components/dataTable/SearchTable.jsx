@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import DataRow from "./DataRow";
 import FilterSelect from "./FilterSelect";
-import Modal from "./Modal";
+import Modal from "../Modal";
 
 export default function SearchTable(props) {
     const [tableData, setTableData] = useState([]),
@@ -196,7 +196,7 @@ export default function SearchTable(props) {
     function getRowData(data) {
         const columns =[];
         props.filters.map((filter) => {
-            columns[filter.filterName] = findValue(data, filter.filterName, filter.extension);
+            columns[filter.filterName] = {value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
         });
         return columns;
     }
@@ -257,25 +257,32 @@ export default function SearchTable(props) {
             tHead.push(
                 <FilterSelect
                     key={filterName}
-                    name={filterName}
-                    type={filterData.filterType}
+                    filterData={filterData}
                     value={searchData[filterName]}
-                    filterData={filterData.filterOptions}
                     handleChange={updateSearch}
                     sort={setOrder}
                     selected={searchData.orderBy}
                 />
             );
+
+            // key={filterName}
+            // name={filterName}
+            // type={filterData.filterType}
+            // value={searchData[filterName]}
+            // filterData={filterData.filterOptions}
+            // handleChange={updateSearch}
+            // sort={setOrder}
+            // selected={searchData.orderBy}
         }
     }
 
     return (
         <>
-            <table>
-                <thead><tr>{tHead}</tr></thead>
+            <table className="searchTable">
+                <thead><tr className="filter-row">{tHead}</tr></thead>
                 {tBody}
             </ table>
-            <Modal modalData={modal} closeFunction={closeModal}/>
+            {modal.visible && <Modal modalData={modal} closeFunction={closeModal}/>}
         </>
     )
 }

@@ -27,26 +27,26 @@ export default function Modal(props) {
     function createElement(fieldData) {
         switch (fieldData.displayAs) {
             case "h1":
-                return <h1 key={fieldData.objectField} className={`modal-h1 modal-${fieldData.modalSection}`}>{fieldData.value}</h1>;
+                return <h1 key={fieldData.objectField} className={`modal-content modal-h1 modal-${fieldData.modalSection}`}>{fieldData.value}</h1>;
                 break;
             case "h2":
-                return <h2 key={fieldData.objectField} className={`modal-h2 modal-${fieldData.modalSection}`}>{fieldData.value}</h2>;
+                return <h2 key={fieldData.objectField} className={`modal-content modal-h2 modal-${fieldData.modalSection}`}>{fieldData.value}</h2>;
                 break;
             case "p":
-                return <p key={fieldData.objectField} className={`modal-p modal-${fieldData.modalSection}`}>{fieldData.value}</p>;
+                return <p key={fieldData.objectField} className={`modal-content modal-p modal-${fieldData.modalSection}`}>{fieldData.value}</p>;
                 break;
         }
     }
 
     const body = <>
-        <div className="close-modal" onClick={props.closeFunction}>x</div>
-        <div className="modal-header">
+        <div className="close-modal modal" onClick={props.closeFunction}>x</div>
+        <div className="modal-header modal">
             {hElements}
         </div>
-        <div className="moldal-body">
+        <div className="moldal-body modal">
             {bElements}
         </div>
-        <div className="modal-footer">
+        <div className="modal-footer modal">
             {fElements}
         </div>
     </>
