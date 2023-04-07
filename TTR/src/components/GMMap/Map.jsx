@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import MapIcon from './MapIcon'
-import npcData from '../assets/testData'
+import npcData from '../../assets/testData'
 
 export default function Map(props) {
     //list of all NPCs on map, includes location, carried items, knowledge, and alignment

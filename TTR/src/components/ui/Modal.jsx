@@ -53,7 +53,7 @@ export default function Modal(props) {
 
     return (
         <div className="modal-shell">
-            {props.modalData.visible && body}
+            {body}
         </div>
     )
 }

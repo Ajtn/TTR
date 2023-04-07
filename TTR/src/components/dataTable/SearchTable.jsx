@@ -1,7 +1,9 @@
 import React, {useState, useEffect} from "react";
 import DataRow from "./DataRow";
 import FilterSelect from "./FilterSelect";
-import Modal from "../Modal";
+import Modal from "../ui/Modal";
+import numberSort from "../../util/NumberSort";
+import findValue from "../../util/FindValue";
 
 export default function SearchTable(props) {
     const [tableData, setTableData] = useState([]),
@@ -27,22 +29,12 @@ export default function SearchTable(props) {
             
     */
 
-    /*
-        Todo:
-            -improve style
-                -CSS hardcoded with class names
-            -reordering elements
-                -auto reordering filter select options
-                -option to order table rows by filter
-    */
-
    //initialise tableData state object based on either local data or API
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
-    useEffect(initFilters, [tableData]);
+    useEffect(initFilters, [tableData, searchData.orderBy]);
     //create event listener to check for keypress to close modal
     useEffect(initKeyListener, []);
 
-    //console.log(searchData.orderBy);
     useEffect(sortTable, [searchData.orderBy]);
 
     function initKeyListener() {
@@ -65,6 +57,11 @@ export default function SearchTable(props) {
                         tempFilterOptions.push(tempVal);
                 }
             }
+            if (typeof tempFilterOptions[0] === "number")
+                tempFilterOptions.sort(numberSort);
+            else 
+                tempFilterOptions.sort();
+
             tempFilters[filter.filterName] = {...filter, filterOptions: tempFilterOptions};
 
         });
@@ -129,7 +126,7 @@ export default function SearchTable(props) {
 
     //sorts tableData by filter stored in searchData (modified by clicking icon next to filter)
     function sortTable() {
-        if (tableData) {
+        if (true) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
                     const xVal = findValue(x, searchData.orderBy.fieldName, searchData.orderBy.extension);
@@ -137,16 +134,11 @@ export default function SearchTable(props) {
                     if (typeof xVal === "string")
                         return xVal.localeCompare(yVal);
                     else if (typeof xVal === "number") {
-                        if (xVal > yVal)
-                            return 1;
-                        else if (xVal < yVal)
-                            return -1;
-                        else
-                            return 0;
+                        return numberSort(xVal, yVal);
                     } else
                         return 0;
                 });
-                if (! searchData.orderBy.invert)
+                if (searchData.orderBy.invert)
                     oldData.reverse();
                 return oldData;
             });
@@ -156,7 +148,6 @@ export default function SearchTable(props) {
     //function called when icon clicked next to filter elements
     //sets orderBy which is a dependancy for orderBy function
     function setOrder(event) {
-        console.log(event.target.parentNode.classList);
         const chosenFilter = props.filters.find((filter) => {
             if (filter.filterName === event.target.parentNode.classList[0])
                 return filter;
@@ -168,28 +159,12 @@ export default function SearchTable(props) {
                 orderBy:{
                     fieldName: chosenFilter.filterName,
                     extension: chosenFilter.extension,
-                    invert: oldSearch.orderBy.invert ? false : true
+                    invert: (oldSearch.orderBy.fieldName === chosenFilter.filterName) ? !oldSearch.orderBy.invert : false
                 }
             });
         });
     }
 
-    //recursive function to find a value in an object given a unique key name (target)
-    //extension stores any generic children keys if they exist (eg {foo: {bar: {value: "actual data"}}})
-    function findValue(node, target, extension) {
-        for (const key in node) {
-            if (key === target) {
-                return extension ? node[key][extension] : node[key];
-            } else {
-                if (typeof node[key] === "object") {
-                    const val = findValue(node[key], target, extension);
-                    if (val) {
-                        return val;
-                    }
-                }
-            }
-        }
-    }
 
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
@@ -265,14 +240,6 @@ export default function SearchTable(props) {
                 />
             );
 
-            // key={filterName}
-            // name={filterName}
-            // type={filterData.filterType}
-            // value={searchData[filterName]}
-            // filterData={filterData.filterOptions}
-            // handleChange={updateSearch}
-            // sort={setOrder}
-            // selected={searchData.orderBy}
         }
     }
 

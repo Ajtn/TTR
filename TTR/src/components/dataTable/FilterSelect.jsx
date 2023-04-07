@@ -3,7 +3,6 @@ import ArrowUp from "../../assets/triangleUp.svg";
 import ArrowDown from "../../assets/triangleDown.svg";
 import Diamond from "../../assets/diamond.svg";
 
-//todo: change x in order-by div to arrow
 export default function FilterSelect(props) {
     const {filterName: name, filterOptions: options, filterType: type, scale: size} = props.filterData;
     let inputElement = {};
@@ -17,13 +16,12 @@ export default function FilterSelect(props) {
     } else {
         inputElement = <input name={name} placeholder={name} value={props.value} onChange={props.handleChange} />;
     }
-    console.log(props.se);
     let icon = "";
     if (props.selected === undefined) {
         icon = Diamond;
     } else {
         if (props.selected.fieldName === name)
-            icon = props.selected.invert ? ArrowDown : ArrowUp;
+            icon = props.selected.invert ? ArrowUp : ArrowDown;
         else 
             icon = Diamond;
     }
