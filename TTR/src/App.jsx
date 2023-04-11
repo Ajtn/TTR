@@ -5,7 +5,8 @@ import dataDump from "./assets/dataDump";
 function App() {
 
   const filterOptions = [
-    {filterName: "name", filterType: "inputType", scale: ""},
+    {filterName: "name", filterType: "inputType", scale: "medium"},
+    {filterName: "spellType", filterType: "select", extension: "value", scale: "medium"},
     {filterName: "level", filterType: "select", extension: "value", scale: "small"},
     {filterName: "school", filterType: "select", extension: "value", scale: "large"},
     {filterName: "source", filterType: "select", extension: "value", scale: "xLarge"}
