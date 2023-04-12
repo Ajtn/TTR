@@ -5,7 +5,7 @@ import dataDump from "./assets/dataDump";
 function App() {
 
   const filterOptions = [
-    {filterName: "name", filterType: "inputType", scale: "medium"},
+    {filterName: "name", filterType: "textBox", scale: "medium"},
     {filterName: "spellType", filterType: "select", extension: "value", scale: "medium"},
     {filterName: "level", filterType: "select", extension: "value", scale: "small"},
     {filterName: "school", filterType: "select", extension: "value", scale: "large"},
@@ -24,7 +24,7 @@ function App() {
       requestConfig: {
         method: "GET",
         headers: {
-          Authorization: "5cfe0fea-a504-4ee4-8f88-baf84aeabef2"
+          //Authorization: 
         }
       }
 

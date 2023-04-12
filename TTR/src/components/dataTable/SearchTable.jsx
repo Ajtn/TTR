@@ -17,7 +17,7 @@ export default function SearchTable(props) {
             //filterName has to match field name in data source
             //extension is required if the required data is an object with generic field names (eg value)
             filters: [
-                {filterName: name, filterType: "inputType"},
+                {filterName: name, filterType: "textBox"},
                 {filterName: school, filterType: "select", extension: "value"}
             ],
             dataSource: {local: false, path: "Exampleurl.com", headers: {auth: pass}, method: "get"},
