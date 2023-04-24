@@ -13,13 +13,15 @@ body {
   border-style: none;
 }
 
-.app {
+div.App {
   border-style: none;
+  display: flex;
+  height: 100%;
 }
 
 table.searchTable {
   table-layout: fixed;
-  width: 100vw;
+  width: 100%;
   border-style: none;
 }
 
@@ -85,5 +87,30 @@ tr.data-row:hover{
 .modal-content {
   padding-top: 2px;
   padding-bottom: 2px;
+}
+
+nav.primary-nav {
+  background-color:rgb(173, 117, 95);
+  border-radius: 3px;
+  border-style: ridge;
+  border-color: black;
+}
+
+nav.expanded-nav {
+  flex: 12rem;
+}
+
+nav.hidden-nav {
+  width: 2rem;
+}
+
+div.navicon {
+  display: flex;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+div.navicon > img {
+  padding-top: 10%;
 }
 
