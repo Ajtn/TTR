@@ -108,6 +108,11 @@ div.navicon {
   display: flex;
   padding-top: 1rem;
   padding-bottom: 1rem;
+  border-radius: 3px;
+}
+
+div.navicon:hover {
+  background-color: rgb(185, 197, 230);
 }
 
 div.navicon > img {

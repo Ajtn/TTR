@@ -4,6 +4,7 @@ import FilterSelect from "./FilterSelect";
 import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
 import findValue from "../../util/FindValue";
+import detailedData from "./detailedData";
 
 export default function SearchTable(props) {
     const [tableData, setTableData] = useState([]),
@@ -242,14 +243,17 @@ export default function SearchTable(props) {
 
         }
     }
-
+    let modalBody = {};
+    if (modal.visible) {
+        modalBody = detailedData(modal.modalElements);
+    }
     return (
         <>
             <table className="searchTable">
                 <thead><tr className="filter-row">{tHead}</tr></thead>
                 {tBody}
             </ table>
-            {modal.visible && <Modal modalData={modal} closeFunction={closeModal}/>}
+            {modal.visible && <Modal head={modalBody.head} body={modalBody.body} footer={modalBody.footer} closeFunction={closeModal}/>}
         </>
     )
 }

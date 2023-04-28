@@ -7,6 +7,7 @@ import page from '../../assets/page.png'
 
 export default function Navbar(props) {
     let navOptions = [
+        {name: "Home", image: "book", expanded: false},
         {name: "Pathfinder Spelllist", image: "book", expanded: false},
         {name: "Unknown Spelllist", image: "page", expanded: false},
         {name: "Ability List", image: "chip", expanded: false}
