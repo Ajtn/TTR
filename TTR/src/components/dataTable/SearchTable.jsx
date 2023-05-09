@@ -49,7 +49,7 @@ export default function SearchTable(props) {
     //ie any filters set to select will have options defined by unique values found in data 
     function initFilters() {
         const tempFilters = {};
-        props.filters.map((filter) => {
+        props.filters.forEach((filter) => {
             const tempFilterOptions = [];
             if (filter.filterType === "select") {
                 for (const key in tableData) {
@@ -114,10 +114,11 @@ export default function SearchTable(props) {
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData() {
         const searchCategory = [];
-        props.filters.map((filter) => {
+        props.filters.forEach((filter) => {
             searchCategory[filter.filterName] = "";
         });
         const tempSearch = {...searchCategory, orderBy: {invert: false}};
+        console.log(tempSearch);
         return tempSearch;
     }
 
@@ -171,7 +172,7 @@ export default function SearchTable(props) {
     //ie defines what the rows in the table will be
     function getRowData(data) {
         const columns =[];
-        props.filters.map((filter) => {
+        props.filters.forEach((filter) => {
             columns[filter.filterName] = {value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
         });
         return columns;
@@ -201,7 +202,7 @@ export default function SearchTable(props) {
         const dataElements = [];
         for (const dKey in tableData) {
             const filterKeys = Object.keys(filters);
-            filterKeys.map((fKey) => {
+            filterKeys.forEach((fKey) => {
                 if (displayElement) {
                     const value = findValue(tableData[dKey], fKey, filters[fKey].extension);
                     if (filters[fKey].filterType === "select") {

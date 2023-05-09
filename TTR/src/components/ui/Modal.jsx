@@ -7,7 +7,7 @@ export default function Modal(props) {
         <div className="modal-header modal">
             {props.head}
         </div>
-        <div className="moldal-body modal">
+        <div className="modal-body modal">
             {props.body}
         </div>
         <div className="modal-footer modal">

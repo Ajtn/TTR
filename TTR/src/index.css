@@ -21,6 +21,8 @@ div.App {
 
 table.searchTable {
   table-layout: fixed;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   border-style: none;
 }
