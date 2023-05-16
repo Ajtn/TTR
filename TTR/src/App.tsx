@@ -6,7 +6,7 @@ import Navbar from "./components/ui/Navbar";
 
 function App() {
 
-  const [openNav, setOpenNav] = useState(false);
+  const [openNav, setOpenNav] = useState({clickOpen: false, mouseOpen: false});
 
   const filterOptions = [
     {filterName: "name", filterType: "textBox", scale: "medium"},
@@ -41,18 +41,26 @@ function App() {
   };
 
   //Logic for navbar to expand and contract, mouse over logic overridden if expand clicked
-  function expandNav(event) {
-    if (event._reactName === "onMouseEnter" && openNav === false)
-      setOpenNav("mouse");
-    else if(event._reactName === "onMouseLeave" && openNav === "mouse")
-      setOpenNav(false);
-    else if (event._reactName === "onClick")
-      setOpenNav(navState => !navState)
+  function expandNav(event: React.MouseEvent | React.KeyboardEvent) {
+    if (event.type === "click")
+      setOpenNav(navState => ({...navState, clickOpen: !navState.clickOpen}));
+    else
+      setOpenNav(navState => ({...navState, mouseOpen: !navState.mouseOpen}));
   }
+
+    // //Logic for navbar to expand and contract, mouse over logic overridden if expand clicked
+    // function expandNav(event:any) {
+    //   if (event._reactName === "onMouseEnter" && openNav === false)
+    //     setOpenNav("mouse");
+    //   else if(event._reactName === "onMouseLeave" && openNav === "mouse")
+    //     setOpenNav(false);
+    //   else if (event._reactName === "onClick")
+    //     setOpenNav(navState => !navState)
+    // }
 
   return (
     <div className="App">
-      <Navbar handleClick={expandNav} mouseOn={expandNav} mouseOff={expandNav} navState={openNav} />
+      <Navbar handleClick={(expandNav)} mouseOn={expandNav} mouseOff={expandNav} navState={openNav.mouseOpen || openNav.clickOpen} />
       <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={localData} modalFields={modalFields} />
     </div>
   )

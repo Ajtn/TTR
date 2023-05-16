@@ -118,7 +118,6 @@ export default function SearchTable(props) {
             searchCategory[filter.filterName] = "";
         });
         const tempSearch = {...searchCategory, orderBy: {invert: false}};
-        console.log(tempSearch);
         return tempSearch;
     }
 
