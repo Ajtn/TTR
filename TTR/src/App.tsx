@@ -3,6 +3,11 @@ import SearchTable from "./components/dataTable/SearchTable";
 import dataDump from "./assets/dataDump";
 import Navbar from "./components/ui/Navbar";
 
+/*
+  Todo:
+    -create .d.ts file and make consistent object types for filters and displayed data
+    -
+*/
 
 function App() {
 
@@ -41,22 +46,12 @@ function App() {
   };
 
   //Logic for navbar to expand and contract, mouse over logic overridden if expand clicked
-  function expandNav(event: React.MouseEvent | React.KeyboardEvent) {
+  function expandNav(event: React.MouseEvent | React.KeyboardEvent): void {
     if (event.type === "click")
       setOpenNav(navState => ({...navState, clickOpen: !navState.clickOpen}));
     else
       setOpenNav(navState => ({...navState, mouseOpen: !navState.mouseOpen}));
   }
-
-    // //Logic for navbar to expand and contract, mouse over logic overridden if expand clicked
-    // function expandNav(event:any) {
-    //   if (event._reactName === "onMouseEnter" && openNav === false)
-    //     setOpenNav("mouse");
-    //   else if(event._reactName === "onMouseLeave" && openNav === "mouse")
-    //     setOpenNav(false);
-    //   else if (event._reactName === "onClick")
-    //     setOpenNav(navState => !navState)
-    // }
 
   return (
     <div className="App">

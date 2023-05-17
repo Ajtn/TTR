@@ -6,29 +6,28 @@ import numberSort from "../../util/NumberSort";
 import findValue from "../../util/FindValue";
 import detailedData from "./detailedData";
 
-export default function SearchTable(props) {
+type filter = {
+    filterName: string, filterType: string, extension?: string, scale: string, filterOptions?: string[]
+};
+type searchTableProps = {
+    //name of field used as key for json being displayed in table
+    id: {fieldName: string, extension: boolean},
+    filters: filter[],
+    dataSource: {
+        local: boolean,
+        api?: {url: string, requestConfig: {method: string, headers: {}}},
+        data?: {},
+        pathToData: string[]
+    }
+
+};
+
+export default function SearchTable(props: searchTableProps) {
+
     const [tableData, setTableData] = useState([]),
-    [filters, setFilters] = useState({}),
+    [filters, setFilters] = useState([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: []});
-
-    /*
-        props {
-            id: {fieldName: '_id', extension: false}
-            //filterName has to match field name in data source
-            //extension is required if the required data is an object with generic field names (eg value)
-            filters: [
-                {filterName: name, filterType: "textBox"},
-                {filterName: school, filterType: "select", extension: "value"}
-            ],
-            dataSource: {local: false, path: "Exampleurl.com", headers: {auth: pass}, method: "get"},
-            modalFields: [
-                {objectField: 'name', displayAs: 'h2', modalSection: "head"},
-                {objectField: 'description', extension: "value", displayAs: 'p', modalSection: "body"},
-            ]
-        }
-            
-    */
 
    //initialise tableData state object based on either local data or API
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
@@ -48,9 +47,8 @@ export default function SearchTable(props) {
     //initialise filter state object based on fields chosen in filters prop and unique values associated with those fields found in data source
     //ie any filters set to select will have options defined by unique values found in data 
     function initFilters() {
-        const tempFilters = {};
-        props.filters.forEach((filter) => {
-            const tempFilterOptions = [];
+        const tempFilters = props.filters.map((filter) => {
+            const tempFilterOptions: string[] = [];
             if (filter.filterType === "select") {
                 for (const key in tableData) {
                     const tempVal = findValue(tableData[key], filter.filterName, filter.extension);
@@ -63,9 +61,10 @@ export default function SearchTable(props) {
             else 
                 tempFilterOptions.sort();
 
-            tempFilters[filter.filterName] = {...filter, filterOptions: tempFilterOptions};
+            return {...filter, filterOptions: tempFilterOptions};
 
         });
+        console.log(tempFilters);
         setFilters(tempFilters);
     }
 
@@ -170,13 +169,12 @@ export default function SearchTable(props) {
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
     function getRowData(data) {
-        const columns =[];
-        props.filters.forEach((filter) => {
-            columns[filter.filterName] = {value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
+        const columns = props.filters.map((filter) => {
+            return {name: filter.filterName, value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
         });
         return columns;
     }
-
+    
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
     function rowClicked(event) {
         const rowId = event.target.parentNode.classList[0];
@@ -200,8 +198,7 @@ export default function SearchTable(props) {
         let displayElement = true;
         const dataElements = [];
         for (const dKey in tableData) {
-            const filterKeys = Object.keys(filters);
-            filterKeys.forEach((fKey) => {
+            filters.forEach((fKey) => {
                 if (displayElement) {
                     const value = findValue(tableData[dKey], fKey, filters[fKey].extension);
                     if (filters[fKey].filterType === "select") {
@@ -223,6 +220,32 @@ export default function SearchTable(props) {
             displayElement = true;
         }
         return <tbody className="searchTable-tbody">{dataElements}</tbody>;
+        // let displayElement = true;
+        // const dataElements = [];
+        // for (const dKey in tableData) {
+        //     const filterKeys = Object.keys(filters);
+        //     filterKeys.forEach((fKey) => {
+        //         if (displayElement) {
+        //             const value = findValue(tableData[dKey], fKey, filters[fKey].extension);
+        //             if (filters[fKey].filterType === "select") {
+        //                 if (searchData[fKey] != 0 && value != searchData[fKey])
+        //                     displayElement = false;
+        //             } else {
+        //                 if (!value.toUpperCase().match(searchData[fKey].toUpperCase()))
+        //                     displayElement = false;
+        //             }
+        //         }
+        //     });
+        //     if (displayElement) {
+        //         const tableFields = getRowData(tableData[dKey]);
+        //         const rowId = findValue(tableData[dKey], props.id.fieldName, props.id.extension)
+        //         dataElements.push(
+        //             <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked} />
+        //         );
+        //     }
+        //     displayElement = true;
+        // }
+        // return <tbody className="searchTable-tbody">{dataElements}</tbody>;
     }
 
     const tBody = tableBody();
