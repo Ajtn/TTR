@@ -25,7 +25,7 @@ type searchTableProps = {
 export default function SearchTable(props: searchTableProps) {
 
     const [tableData, setTableData] = useState([]),
-    [filters, setFilters] = useState([]),
+    [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: []});
 
@@ -198,14 +198,14 @@ export default function SearchTable(props: searchTableProps) {
         let displayElement = true;
         const dataElements = [];
         for (const dKey in tableData) {
-            filters.forEach((fKey) => {
+            filters.forEach((filter) => {
                 if (displayElement) {
-                    const value = findValue(tableData[dKey], fKey, filters[fKey].extension);
-                    if (filters[fKey].filterType === "select") {
-                        if (searchData[fKey] != 0 && value != searchData[fKey])
+                    const value = findValue(tableData[dKey], filter.filterName, filter.extension);
+                    if (filter.filterType === "select") {
+                        if (searchData[filter.filterName] != 0 && value != searchData[filter.filterName])
                             displayElement = false;
                     } else {
-                        if (!value.toUpperCase().match(searchData[fKey].toUpperCase()))
+                        if (!value.toUpperCase().match(searchData[filter.filterName].toUpperCase()))
                             displayElement = false;
                     }
                 }
@@ -220,32 +220,6 @@ export default function SearchTable(props: searchTableProps) {
             displayElement = true;
         }
         return <tbody className="searchTable-tbody">{dataElements}</tbody>;
-        // let displayElement = true;
-        // const dataElements = [];
-        // for (const dKey in tableData) {
-        //     const filterKeys = Object.keys(filters);
-        //     filterKeys.forEach((fKey) => {
-        //         if (displayElement) {
-        //             const value = findValue(tableData[dKey], fKey, filters[fKey].extension);
-        //             if (filters[fKey].filterType === "select") {
-        //                 if (searchData[fKey] != 0 && value != searchData[fKey])
-        //                     displayElement = false;
-        //             } else {
-        //                 if (!value.toUpperCase().match(searchData[fKey].toUpperCase()))
-        //                     displayElement = false;
-        //             }
-        //         }
-        //     });
-        //     if (displayElement) {
-        //         const tableFields = getRowData(tableData[dKey]);
-        //         const rowId = findValue(tableData[dKey], props.id.fieldName, props.id.extension)
-        //         dataElements.push(
-        //             <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked} />
-        //         );
-        //     }
-        //     displayElement = true;
-        // }
-        // return <tbody className="searchTable-tbody">{dataElements}</tbody>;
     }
 
     const tBody = tableBody();
