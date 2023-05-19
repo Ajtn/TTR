@@ -5,10 +5,8 @@ import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
 import findValue from "../../util/FindValue";
 import detailedData from "./detailedData";
+import { filter } from "./SearchTable.types";
 
-type filter = {
-    filterName: string, filterType: string, extension?: string, scale: string, filterOptions?: string[]
-};
 type searchTableProps = {
     //name of field used as key for json being displayed in table
     id: {fieldName: string, extension: boolean},
@@ -24,7 +22,7 @@ type searchTableProps = {
 
 export default function SearchTable(props: searchTableProps) {
 
-    const [tableData, setTableData] = useState([]),
+    const [tableData, setTableData] = useState<{}[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: []});
@@ -64,12 +62,11 @@ export default function SearchTable(props: searchTableProps) {
             return {...filter, filterOptions: tempFilterOptions};
 
         });
-        console.log(tempFilters);
         setFilters(tempFilters);
     }
 
     //hides modal if escape is pressed or if x is clicked in modal
-    function closeModal(event) {
+    function closeModal(event: React.KeyboardEvent | React.MouseEvent) {
         if (! event.code || event.code === "Escape")
             setModal((oldModal) => ({...oldModal, visible: false}));
     }
@@ -87,22 +84,24 @@ export default function SearchTable(props: searchTableProps) {
 
     //Fetches data from API, finds main data array based on props pathToData, then stores a key value arrray in state
     function callApi() {
-        fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
-        .then((res) => res.json())
-        .then((data) => {
-            const tempData = [];
-            const unsorted = followObjPath(data, props.dataSource.pathToData);
-            for (const key in unsorted)
-                tempData.push(unsorted[key]);
-
-            console.log("temp data in api call");
-            console.log(tempData);
-            setTableData(tempData);
-        });
+        if (typeof props.dataSource.api !== "undefined") {
+            fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
+            .then((res) => res.json())
+            .then((data) => {
+                const tempData = [];
+                const unsorted = followObjPath(data, props.dataSource.pathToData);
+                for (const key in unsorted)
+                    tempData.push(unsorted[key]);
+    
+                console.log("temp data in api call");
+                console.log(tempData);
+                setTableData(tempData);
+            });
+        }
     }
 
     //takes an object and an array of field names intended to guide method to intended object
-    function followObjPath(node, pathArray) {
+    function followObjPath(node:{}, pathArray:string[]):{} {
         const pathClone = pathArray.map((pathVar) => pathVar);
         if (pathClone.length > 1)
             return followObjPath(node[pathClone.pop()], pathClone);
@@ -120,7 +119,7 @@ export default function SearchTable(props: searchTableProps) {
         return tempSearch;
     }
 
-    function updateSearch(event) {
+    function updateSearch(event: React.ChangeEvent<HTMLInputElement>) {
         setSearchData(oldSearch => ({...oldSearch, [event.target.name]: event.target.value}));
     }
 
@@ -147,9 +146,9 @@ export default function SearchTable(props: searchTableProps) {
 
     //function called when icon clicked next to filter elements
     //sets orderBy which is a dependancy for orderBy function
-    function setOrder(event) {
+    function setOrder(event: React.ChangeEvent<HTMLInputElement>) {
         const chosenFilter = props.filters.find((filter) => {
-            if (filter.filterName === event.target.parentNode.classList[0])
+            if (filter.filterName === event.target.parentNode?.classList[0])
                 return filter;
         });
 
