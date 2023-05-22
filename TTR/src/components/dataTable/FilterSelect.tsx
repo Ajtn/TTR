@@ -7,9 +7,9 @@ import { filter } from "./SearchTable.types";
 type filterSelectProps = {
     filterData: filter,
     value: string,
-    handleChange: (event: React.ChangeEvent<HTMLInputElement>) => void,
-    sort: any,
-    selected: string
+    handleChange: (event: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) => void,
+    sort: (event: React.MouseEvent<HTMLImageElement>) => void,
+    selected: {fieldName: string, extension: string, invert: boolean}
 };
 
 export default function FilterSelect(props: filterSelectProps) {
@@ -18,8 +18,8 @@ export default function FilterSelect(props: filterSelectProps) {
     if (type === "select") {
         inputElement = 
         (
-        <select defaultValue={0} name={name} onChange={props.handleChange}>
-            <option key="0" value={0}>Filter by {name}</option>
+        <select defaultValue={""} name={name} onChange={props.handleChange}>
+            <option key="0" value={""}>Filter by {name}</option>
             {options?.map(option => <option key={option} value={option}>{`${name} ${option}`}</option>)}
         </select>)
     } else {

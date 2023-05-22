@@ -17,12 +17,16 @@ type searchTableProps = {
         data?: {},
         pathToData: string[]
     }
+};
 
+type searchData = {
+    orderBy?: {fieldName: string, extension: string, invert: boolean},
+    searchStrings: {[fieldName: string]:string}
 };
 
 export default function SearchTable(props: searchTableProps) {
 
-    const [tableData, setTableData] = useState<{}[]>([]),
+    const [tableData, setTableData] = useState<object[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: []});
@@ -44,7 +48,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //initialise filter state object based on fields chosen in filters prop and unique values associated with those fields found in data source
     //ie any filters set to select will have options defined by unique values found in data 
-    function initFilters() {
+    function initFilters():void {
         const tempFilters = props.filters.map((filter) => {
             const tempFilterOptions: string[] = [];
             if (filter.filterType === "select") {
@@ -60,7 +64,6 @@ export default function SearchTable(props: searchTableProps) {
                 tempFilterOptions.sort();
 
             return {...filter, filterOptions: tempFilterOptions};
-
         });
         setFilters(tempFilters);
     }
@@ -110,22 +113,30 @@ export default function SearchTable(props: searchTableProps) {
     }
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
-    function initSearchData() {
-        const searchCategory = [];
+    function initSearchData():searchData {
+        const searchCategories: object = {};
         props.filters.forEach((filter) => {
-            searchCategory[filter.filterName] = "";
+            searchCategories[filter.filterName] = "";
         });
-        const tempSearch = {...searchCategory, orderBy: {invert: false}};
-        return tempSearch;
+        return {searchStrings: searchCategories};
     }
 
-    function updateSearch(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearchData(oldSearch => ({...oldSearch, [event.target.name]: event.target.value}));
+    function updateSearch(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>): void {
+        setSearchData((oldSearch) => {
+            let tempSearch = oldSearch.searchStrings;
+            for (const searchVal in oldSearch.searchStrings) {
+                if (searchVal === event.target.name) {
+                    tempSearch = {...oldSearch.searchStrings, [event.target.name]: event.target.value};
+                }
+            }
+            return {...oldSearch, searchStrings: tempSearch};
+        });
+
     }
 
     //sorts tableData by filter stored in searchData (modified by clicking icon next to filter)
     function sortTable() {
-        if (true) {
+        if (searchData.orderBy) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
                     const xVal = findValue(x, searchData.orderBy.fieldName, searchData.orderBy.extension);
@@ -146,7 +157,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //function called when icon clicked next to filter elements
     //sets orderBy which is a dependancy for orderBy function
-    function setOrder(event: React.ChangeEvent<HTMLInputElement>) {
+    function setOrder(event: React.MouseEvent<HTMLImageElement>) :void{
         const chosenFilter = props.filters.find((filter) => {
             if (filter.filterName === event.target.parentNode?.classList[0])
                 return filter;
@@ -156,9 +167,9 @@ export default function SearchTable(props: searchTableProps) {
             return ({
                 ...oldSearch,
                 orderBy:{
-                    fieldName: chosenFilter.filterName,
-                    extension: chosenFilter.extension,
-                    invert: (oldSearch.orderBy.fieldName === chosenFilter.filterName) ? !oldSearch.orderBy.invert : false
+                    fieldName: chosenFilter?.filterName,
+                    extension: chosenFilter?.extension,
+                    invert: (oldSearch.orderBy?.fieldName === chosenFilter?.filterName) ? !oldSearch.orderBy?.invert : false
                 }
             });
         });
@@ -193,32 +204,31 @@ export default function SearchTable(props: searchTableProps) {
 
     //checks each data element against current search values and generates jsx for elements that aren't filtered out
     function tableBody() {
-        //jsx has to be returned outside of filter loop, this bool is used to remember anytime the value would be filtered
         let displayElement = true;
-        const dataElements = [];
-        for (const dKey in tableData) {
+        const dataElements = tableData.map((dataE) => {
+            
             filters.forEach((filter) => {
-                if (displayElement) {
-                    const value = findValue(tableData[dKey], filter.filterName, filter.extension);
-                    if (filter.filterType === "select") {
-                        if (searchData[filter.filterName] != 0 && value != searchData[filter.filterName])
-                            displayElement = false;
-                    } else {
-                        if (!value.toUpperCase().match(searchData[filter.filterName].toUpperCase()))
+                const value = findValue(dataE, filter.filterName, filter.extension);
+                if (filter.filterType === "select") {
+                    if (searchData.searchStrings[filter.filterName] !== "" && value !== searchData.searchStrings[filter.filterName])
+                        displayElement = false;
+                }
+                else {
+                    if (typeof value === "string") {
+                        if (!value.toUpperCase().match(searchData.searchStrings[filter.filterName].toUpperCase()))
                             displayElement = false;
                     }
                 }
             });
             if (displayElement) {
-                const tableFields = getRowData(tableData[dKey]);
-                const rowId = findValue(tableData[dKey], props.id.fieldName, props.id.extension)
-                dataElements.push(
-                    <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked} />
-                );
+                const tableFields = getRowData(dataE);
+                const rowId = findValue(dataE, props.id.fieldName, props.id.extension);
+                return <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked}/>
             }
             displayElement = true;
-        }
+        });
         return <tbody className="searchTable-tbody">{dataElements}</tbody>;
+    
     }
 
     const tBody = tableBody();
