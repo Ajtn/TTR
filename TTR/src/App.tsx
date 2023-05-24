@@ -22,8 +22,8 @@ function App() {
   ];
 
   const modalFields = [
-    {objectField: "name", displayAs: "h2", modalSection: "head"},
-    {objectField: "description", displayAs: "p", extension: "value", modalSection: "body"},
+    {fieldName: "name", displayAs: "h2", modalSection: "head"},
+    {fieldName: "description", displayAs: "p", extension: "value", modalSection: "body"},
   ];
 
   const apiInfo = {
@@ -56,7 +56,7 @@ function App() {
   return (
     <div className="App">
       <Navbar handleClick={(expandNav)} mouseOn={expandNav} mouseOff={expandNav} navState={openNav.mouseOpen || openNav.clickOpen} />
-      <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={localData} modalFields={modalFields} />
+      <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={localData} modalConfig={modalFields} />
     </div>
   )
 }

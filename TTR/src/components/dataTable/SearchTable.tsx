@@ -7,6 +7,14 @@ import findValue from "../../util/FindValue";
 import detailedData from "./detailedData";
 import { filter } from "./SearchTable.types";
 
+type modalField = {
+    fieldName: string;
+    displayAs: string;
+    modalSection: string;
+    extension?: string;
+    value?: string;
+};
+
 type searchTableProps = {
     //name of field used as key for json being displayed in table
     id: {fieldName: string, extension: boolean};
@@ -17,6 +25,7 @@ type searchTableProps = {
         data?: {},
         pathToData: string[]
     };
+    modalConfig: modalField[];
 };
 
 type searchData = {
@@ -25,11 +34,12 @@ type searchData = {
 };
 
 export default function SearchTable(props: searchTableProps) {
+    const modalFields: Array<modalField> = [];
 
     const [tableData, setTableData] = useState<object[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
-    [modal, setModal] = useState({visible: false, modalElements: []});
+    [modal, setModal] = useState({visible: false, modalElements: modalFields});
 
    //initialise tableData state object based on either local data or API
     props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
@@ -70,7 +80,6 @@ export default function SearchTable(props: searchTableProps) {
 
     //hides modal if escape is pressed or if x is clicked in modal
     function closeModal(event: Event):void {
-        console.log(event);
         if (event instanceof KeyboardEvent) {
             if (event.key === "Escape") {
                 setModal((oldModal) => ({...oldModal, visible: false}));
@@ -82,7 +91,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
-    function initLocalData() {
+    function initLocalData():void {
         const tempData = [];
         const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
         for (const key in unsorted)
@@ -92,7 +101,7 @@ export default function SearchTable(props: searchTableProps) {
     }
 
     //Fetches data from API, finds main data array based on props pathToData, then stores a key value arrray in state
-    function callApi() {
+    function callApi():void {
         if (typeof props.dataSource.api !== "undefined") {
             fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
             .then((res) => res.json())
@@ -120,11 +129,11 @@ export default function SearchTable(props: searchTableProps) {
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData():searchData {
-        const searchCategories: object = {};
+        const searchCategories: searchData = {searchStrings: {}};
         props.filters.forEach((filter) => {
-            searchCategories[filter.filterName] = "";
+            searchCategories.searchStrings[filter.filterName] = "";
         });
-        return {searchStrings: searchCategories};
+        return searchCategories;
     }
 
     function updateSearch(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>): void {
@@ -141,12 +150,12 @@ export default function SearchTable(props: searchTableProps) {
     }
 
     //sorts tableData by filter stored in searchData (modified by clicking icon next to filter)
-    function sortTable() {
+    function sortTable():void {
         if (searchData.orderBy) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
-                    const xVal = findValue(x, searchData.orderBy.fieldName, searchData.orderBy.extension);
-                    const yVal = findValue(y, searchData.orderBy.fieldName, searchData.orderBy.extension);
+                    const xVal = findValue(x, searchData.orderBy?.fieldName, searchData.orderBy?.extension);
+                    const yVal = findValue(y, searchData.orderBy?.fieldName, searchData.orderBy?.extension);
                     if (typeof xVal === "string")
                         return xVal.localeCompare(yVal);
                     else if (typeof xVal === "number") {
@@ -154,7 +163,7 @@ export default function SearchTable(props: searchTableProps) {
                     } else
                         return 0;
                 });
-                if (searchData.orderBy.invert)
+                if (searchData.orderBy?.invert)
                     oldData.reverse();
                 return oldData;
             });
@@ -163,12 +172,14 @@ export default function SearchTable(props: searchTableProps) {
 
     //function called when icon clicked next to filter elements
     //sets orderBy which is a dependancy for orderBy function
-    function setOrder(event: React.MouseEvent<HTMLImageElement>) :void{
+    function setOrder(event: React.MouseEvent<HTMLImageElement>):void {
+        let tempNode = event.target as HTMLElement;
         const chosenFilter = props.filters.find((filter) => {
-            if (filter.filterName === event.target.parentNode?.classList[0])
+            if (filter.filterName === tempNode.parentElement?.classList[0])
                 return filter;
         });
 
+        console.log(chosenFilter);
         setSearchData((oldSearch) => {
             return ({
                 ...oldSearch,
@@ -184,7 +195,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
-    function getRowData(data) {
+    function getRowData(data:unknown) {
         const columns = props.filters.map((filter) => {
             return {name: filter.filterName, value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
         });
@@ -192,20 +203,24 @@ export default function SearchTable(props: searchTableProps) {
     }
     
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
-    function rowClicked(event) {
-        const rowId = event.target.parentNode.classList[0];
-        let clickedRow = {};
-        tableData.some((rowData) => {
-            if (findValue(rowData, props.id.fieldName, props.id.extension) === rowId)
-                clickedRow = rowData;
-        });
-        const modalElements = props.modalFields.map((field) => {
-            return {
-                ...field,
-                value: findValue(clickedRow, field.objectField, field.extension),
-            };
-        });
-        setModal({visible: true, modalElements: modalElements});
+    function rowClicked(event: React.MouseEvent):void {
+        const tempNode = event.target as HTMLElement;
+        if ("parentElement" in tempNode) {
+            const rowId = tempNode.parentElement?.classList[0];
+            let clickedRow = {};
+            tableData.some((rowData) => {
+                if (findValue(rowData, props.id.fieldName, props.id.extension) === rowId)
+                    clickedRow = rowData;
+            });
+            const modalElements = props.modalConfig.map((field) => {
+                return {
+                    ...field,
+                    value: findValue(clickedRow, field.fieldName, field.extension),
+                };
+            });
+            setModal({visible: true, modalElements: modalElements});
+        }
+
     }
 
     //checks each data element against current search values and generates jsx for elements that aren't filtered out
