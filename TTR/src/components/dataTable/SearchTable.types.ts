@@ -1,7 +1,8 @@
 export type filter = {
-    filterName: string,
-    filterType: string,
-    extension?: string,
-    scale: string,
-    filterOptions?: string[]
+    filterName: string;
+    filterType: string;
+    extension?: string;
+    scale: string;
+    filterOptions?: string[];
 };
+

@@ -9,19 +9,19 @@ import { filter } from "./SearchTable.types";
 
 type searchTableProps = {
     //name of field used as key for json being displayed in table
-    id: {fieldName: string, extension: boolean},
-    filters: filter[],
+    id: {fieldName: string, extension: boolean};
+    filters: filter[];
     dataSource: {
         local: boolean,
         api?: {url: string, requestConfig: {method: string, headers: {}}},
         data?: {},
         pathToData: string[]
-    }
+    };
 };
 
 type searchData = {
-    orderBy?: {fieldName: string, extension: string, invert: boolean},
-    searchStrings: {[fieldName: string]:string}
+    orderBy?: {fieldName: string, extension: string, invert: boolean};
+    searchStrings: {[fieldName: string]:string};
 };
 
 export default function SearchTable(props: searchTableProps) {
@@ -69,9 +69,15 @@ export default function SearchTable(props: searchTableProps) {
     }
 
     //hides modal if escape is pressed or if x is clicked in modal
-    function closeModal(event: React.KeyboardEvent | React.MouseEvent) {
-        if (! event.code || event.code === "Escape")
+    function closeModal(event: Event):void {
+        console.log(event);
+        if (event instanceof KeyboardEvent) {
+            if (event.key === "Escape") {
+                setModal((oldModal) => ({...oldModal, visible: false}));
+            }
+        } else {
             setModal((oldModal) => ({...oldModal, visible: false}));
+        }
     }
 
     //finds main data array in provided local data given appropriate path

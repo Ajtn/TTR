@@ -5,11 +5,11 @@ import Diamond from "../../assets/diamond.svg";
 import { filter } from "./SearchTable.types";
 
 type filterSelectProps = {
-    filterData: filter,
-    value: string,
-    handleChange: (event: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) => void,
-    sort: (event: React.MouseEvent<HTMLImageElement>) => void,
-    selected: {fieldName: string, extension: string, invert: boolean}
+    filterData: filter;
+    value: string;
+    handleChange: (event: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) => void;
+    sort: (event: React.MouseEvent<HTMLImageElement>) => void;
+    selected: {fieldName: string, extension: string, invert: boolean};
 };
 
 export default function FilterSelect(props: filterSelectProps) {
