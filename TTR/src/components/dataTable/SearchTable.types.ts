@@ -12,3 +12,11 @@ export function isFilter(object: any): object is filter {
     else 
         return false;
 }
+
+export type modalField = {
+    fieldName: string;
+    displayAs: string;
+    modalSection: string;
+    extension?: string;
+    value?: string;
+};

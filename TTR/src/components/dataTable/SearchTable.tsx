@@ -4,16 +4,8 @@ import FilterSelect from "./FilterSelect";
 import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
 import findValue from "../../util/FindValue";
-import detailedData from "./detailedData";
-import { filter } from "./SearchTable.types";
-
-type modalField = {
-    fieldName: string;
-    displayAs: string;
-    modalSection: string;
-    extension?: string;
-    value?: string;
-};
+import DetailedData from "./detailedData";
+import { filter, isFilter, modalField } from "./SearchTable.types";
 
 type searchTableProps = {
     //name of field used as key for json being displayed in table
@@ -179,17 +171,19 @@ export default function SearchTable(props: searchTableProps) {
                 return filter;
         });
 
-        console.log(chosenFilter);
-        setSearchData((oldSearch) => {
-            return ({
-                ...oldSearch,
-                orderBy:{
-                    fieldName: chosenFilter?.filterName,
-                    extension: chosenFilter?.extension,
-                    invert: (oldSearch.orderBy?.fieldName === chosenFilter?.filterName) ? !oldSearch.orderBy?.invert : false
-                }
+        if (isFilter(chosenFilter)) {
+            setSearchData((oldSearch) => {
+                return ({
+                    ...oldSearch,
+                    orderBy:{
+                        fieldName: chosenFilter?.filterName,
+                        extension: chosenFilter?.extension,
+                        invert: (oldSearch.orderBy?.fieldName === chosenFilter?.filterName) ? !oldSearch.orderBy?.invert : false
+                    }
+                });
             });
-        });
+        }
+
     }
 
 
@@ -270,9 +264,9 @@ export default function SearchTable(props: searchTableProps) {
 
         }
     }
-    let modalBody = {};
+    let modalElements = {};
     if (modal.visible) {
-        modalBody = detailedData(modal.modalElements);
+        modalElements = DetailedData(modal.modalElements);
     }
     return (
         <>
@@ -280,7 +274,7 @@ export default function SearchTable(props: searchTableProps) {
                 <thead><tr className="filter-row">{tHead}</tr></thead>
                 {tBody}
             </ table>
-            {modal.visible && <Modal head={modalBody.head} body={modalBody.body} footer={modalBody.footer} closeFunction={closeModal}/>}
+            {modal.visible && <Modal modalContent={modalElements} closeFunction={closeModal}/>}
         </>
     )
 }
