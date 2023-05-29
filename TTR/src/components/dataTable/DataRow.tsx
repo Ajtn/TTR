@@ -1,7 +1,7 @@
 import React from "react";
 
 type dataRowProps = {
-    dataForDisplay: {name: string, value: string, sizeTag: string}[];
+    dataForDisplay: {name: string, value: string | number, sizeTag: string}[];
     handleClick: (event: React.MouseEvent) => void;
     id: string;
 };

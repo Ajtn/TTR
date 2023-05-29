@@ -34,6 +34,6 @@ export default function DetailedData (props: modalField[]) {
                 break;
         }
     }
-
+    
     return {head: hElements, body: bElements, footer: fElements};
 }

@@ -133,14 +133,6 @@ export default function SearchTable(props: searchTableProps) {
         return searchCategories;
     }
 
-    // //creates an object to reflect each filter chosen in props to prevent undefined values being checked
-    // function initSearchData():searchData {
-    //     const searchCategories: searchData = {searchStrings: {}};
-    //     props.filters.forEach((filter) => {
-    //         searchCategories.searchStrings[filter.filterName] = "";
-    //     });
-    //     return searchCategories;
-    // }
 
     function updateSearch(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>): void {
         setSearchData((oldSearch) => {
@@ -209,9 +201,12 @@ export default function SearchTable(props: searchTableProps) {
     function getRowData(data:unknown) {
         const columns = props.filters.map((filter) => {
             const tempVal = findValue(data as JSONValue, filter.filterName, filter.extension);
-            return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
+            if (tempVal)
+                return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
+            else
+                return false;
         });
-        return columns;
+        return columns.filter(col => col !== false);
     }
     
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
@@ -248,7 +243,7 @@ export default function SearchTable(props: searchTableProps) {
                     }
                 } else {
                     if (typeof value === "string") {
-                        if (!value.toUpperCase().match(searchData.searchStrings[filter.filterName].toUpperCase()))
+                        if (!value.toUpperCase().match((searchData.searchStrings[filter.filterName] as string).toUpperCase()))
                             displayElement = false;
                     }
                 }
@@ -256,7 +251,7 @@ export default function SearchTable(props: searchTableProps) {
             if (displayElement) {
                 const tableFields = getRowData(dataE);
                 const rowId = findValue(dataE as JSONValue, props.id.fieldName, props.id.extension);
-                return <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked}/>
+                return <DataRow key={rowId} id={rowId as string} dataForDisplay={tableFields} handleClick={rowClicked}/>
             }
             displayElement = true;
         });
@@ -273,8 +268,8 @@ export default function SearchTable(props: searchTableProps) {
                 <FilterSelect
                     key={filterName}
                     filterData={filterData}
-                    value={searchData[filterName]}
                     handleChange={updateSearch}
+                    value={searchData.searchStrings[filterName]}
                     sort={setOrder}
                     selected={searchData.orderBy}
                 />
