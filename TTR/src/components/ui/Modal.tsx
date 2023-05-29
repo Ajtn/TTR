@@ -2,9 +2,9 @@ import React, {MouseEventHandler} from "react";
 
 type modalProps = {
     modalContent: {
-        head: React.JSX.Element[],
-        body: React.JSX.Element[],
-        footer: React.JSX.Element[]
+        head?: React.JSX.Element[],
+        body?: React.JSX.Element[],
+        footer?: React.JSX.Element[]
     };
     closeFunction: (MouseEventHandler<HTMLDivElement>);
 };

@@ -3,13 +3,13 @@ import DataRow from "./DataRow";
 import FilterSelect from "./FilterSelect";
 import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
-import findValue from "../../util/FindValue";
+import {findValue, JSONValue} from "../../util/FindValue";
 import DetailedData from "./detailedData";
 import { filter, isFilter, modalField } from "./SearchTable.types";
 
 type searchTableProps = {
     //name of field used as key for json being displayed in table
-    id: {fieldName: string, extension: boolean};
+    id: {fieldName: string, extension: string};
     filters: filter[];
     dataSource: {
         local: boolean,
@@ -22,11 +22,11 @@ type searchTableProps = {
 
 type searchData = {
     orderBy?: {fieldName: string, extension: string, invert: boolean};
-    searchStrings: {[fieldName: string]:string};
+    searchStrings: {[fieldName: string]:string | number};
 };
 
 export default function SearchTable(props: searchTableProps) {
-    const modalFields: Array<modalField> = [];
+    const modalFields: modalField[] = [];
 
     const [tableData, setTableData] = useState<object[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
@@ -52,10 +52,12 @@ export default function SearchTable(props: searchTableProps) {
     //ie any filters set to select will have options defined by unique values found in data 
     function initFilters():void {
         const tempFilters = props.filters.map((filter) => {
-            const tempFilterOptions: string[] = [];
-            if (filter.filterType === "select") {
+            const tempFilterOptions: (string | number)[] = [];
+            if (filter.inputType === "select") {
                 for (const key in tableData) {
-                    const tempVal = findValue(tableData[key], filter.filterName, filter.extension);
+                    const tempVal = findValue(tableData[key] as JSONValue, filter.filterName, filter.extension);
+                    if (tempVal === null)
+                        return;
                     if (! tempFilterOptions.includes(tempVal))
                         tempFilterOptions.push(tempVal);
                 }
@@ -123,17 +125,32 @@ export default function SearchTable(props: searchTableProps) {
     function initSearchData():searchData {
         const searchCategories: searchData = {searchStrings: {}};
         props.filters.forEach((filter) => {
-            searchCategories.searchStrings[filter.filterName] = "";
+            if (filter.varType === "number")
+                return searchCategories.searchStrings[filter.filterName] = 0;
+            else
+                return searchCategories.searchStrings[filter.filterName] = "";
         });
         return searchCategories;
     }
+
+    // //creates an object to reflect each filter chosen in props to prevent undefined values being checked
+    // function initSearchData():searchData {
+    //     const searchCategories: searchData = {searchStrings: {}};
+    //     props.filters.forEach((filter) => {
+    //         searchCategories.searchStrings[filter.filterName] = "";
+    //     });
+    //     return searchCategories;
+    // }
 
     function updateSearch(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>): void {
         setSearchData((oldSearch) => {
             let tempSearch = oldSearch.searchStrings;
             for (const searchVal in oldSearch.searchStrings) {
-                if (searchVal === event.target.name) {
-                    tempSearch = {...oldSearch.searchStrings, [event.target.name]: event.target.value};
+                if (searchVal === event.target.name) {      
+                    if (typeof oldSearch.searchStrings[searchVal] === "number")
+                        tempSearch = {...oldSearch.searchStrings, [event.target.name]: parseInt(event.target.value)};
+                    else
+                        tempSearch = {...oldSearch.searchStrings, [event.target.name]: event.target.value};
                 }
             }
             return {...oldSearch, searchStrings: tempSearch};
@@ -146,11 +163,11 @@ export default function SearchTable(props: searchTableProps) {
         if (searchData.orderBy) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
-                    const xVal = findValue(x, searchData.orderBy?.fieldName, searchData.orderBy?.extension);
-                    const yVal = findValue(y, searchData.orderBy?.fieldName, searchData.orderBy?.extension);
-                    if (typeof xVal === "string")
+                    const xVal = findValue(x as JSONValue, searchData.orderBy.fieldName, searchData.orderBy?.extension);
+                    const yVal = findValue(y as JSONValue, searchData.orderBy.fieldName, searchData.orderBy?.extension);
+                    if (typeof xVal === "string" && typeof yVal === "string")
                         return xVal.localeCompare(yVal);
-                    else if (typeof xVal === "number") {
+                    else if (typeof xVal === "number" && typeof yVal === "number") {
                         return numberSort(xVal, yVal);
                     } else
                         return 0;
@@ -191,7 +208,8 @@ export default function SearchTable(props: searchTableProps) {
     //ie defines what the rows in the table will be
     function getRowData(data:unknown) {
         const columns = props.filters.map((filter) => {
-            return {name: filter.filterName, value: findValue(data, filter.filterName, filter.extension), sizeTag: filter.scale};
+            const tempVal = findValue(data as JSONValue, filter.filterName, filter.extension);
+            return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
         });
         return columns;
     }
@@ -203,13 +221,13 @@ export default function SearchTable(props: searchTableProps) {
             const rowId = tempNode.parentElement?.classList[0];
             let clickedRow = {};
             tableData.some((rowData) => {
-                if (findValue(rowData, props.id.fieldName, props.id.extension) === rowId)
+                if (findValue(rowData as JSONValue, props.id.fieldName, props.id.extension) === rowId)
                     clickedRow = rowData;
             });
             const modalElements = props.modalConfig.map((field) => {
                 return {
                     ...field,
-                    value: findValue(clickedRow, field.fieldName, field.extension),
+                    value: findValue(clickedRow, field.fieldName, field.extension? field.extension : ""),
                 };
             });
             setModal({visible: true, modalElements: modalElements});
@@ -223,12 +241,12 @@ export default function SearchTable(props: searchTableProps) {
         const dataElements = tableData.map((dataE) => {
             
             filters.forEach((filter) => {
-                const value = findValue(dataE, filter.filterName, filter.extension);
-                if (filter.filterType === "select") {
-                    if (searchData.searchStrings[filter.filterName] !== "" && value !== searchData.searchStrings[filter.filterName])
+                const value = findValue(dataE as JSONValue, filter.filterName, filter.extension);
+                if (filter.inputType === "select") {
+                    if ((searchData.searchStrings[filter.filterName] !== "" && searchData.searchStrings[filter.filterName] !== 0) && value !== searchData.searchStrings[filter.filterName]) {
                         displayElement = false;
-                }
-                else {
+                    }
+                } else {
                     if (typeof value === "string") {
                         if (!value.toUpperCase().match(searchData.searchStrings[filter.filterName].toUpperCase()))
                             displayElement = false;
@@ -237,7 +255,7 @@ export default function SearchTable(props: searchTableProps) {
             });
             if (displayElement) {
                 const tableFields = getRowData(dataE);
-                const rowId = findValue(dataE, props.id.fieldName, props.id.extension);
+                const rowId = findValue(dataE as JSONValue, props.id.fieldName, props.id.extension);
                 return <DataRow key={rowId} id={rowId} dataForDisplay={tableFields} handleClick={rowClicked}/>
             }
             displayElement = true;

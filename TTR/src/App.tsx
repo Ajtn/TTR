@@ -14,11 +14,11 @@ function App() {
   const [openNav, setOpenNav] = useState({clickOpen: false, mouseOpen: false});
 
   const filterOptions = [
-    {filterName: "name", filterType: "textBox", scale: "medium"},
-    {filterName: "spellType", filterType: "select", extension: "value", scale: "medium"},
-    {filterName: "level", filterType: "select", extension: "value", scale: "small"},
-    {filterName: "school", filterType: "select", extension: "value", scale: "large"},
-    {filterName: "source", filterType: "select", extension: "value", scale: "xLarge"}
+    {filterName: "name", inputType: "textBox", scale: "medium"},
+    {filterName: "spellType", inputType: "select", extension: "value", scale: "medium"},
+    {filterName: "level", inputType: "select", varType: "number", extension: "value", scale: "small"},
+    {filterName: "school", inputType: "select", extension: "value", scale: "large"},
+    {filterName: "source", inputType: "select", extension: "value", scale: "xLarge"}
   ];
 
   const modalFields = [

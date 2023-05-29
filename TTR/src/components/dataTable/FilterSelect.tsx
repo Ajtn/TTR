@@ -13,15 +13,24 @@ type filterSelectProps = {
 };
 
 export default function FilterSelect(props: filterSelectProps) {
-    const {filterName: name, filterOptions: options, filterType: type, scale: size} = props.filterData;
+    const {filterName: name, filterOptions: options, inputType: input, varType: type ,scale: size} = props.filterData;
     let inputElement: null | React.ReactNode;
-    if (type === "select") {
-        inputElement = 
-        (
-        <select defaultValue={""} name={name} onChange={props.handleChange}>
-            <option key="0" value={""}>Filter by {name}</option>
-            {options?.map(option => <option key={option} value={option}>{`${name} ${option}`}</option>)}
-        </select>)
+    if (input === "select") {
+        if (type === "number") {
+            inputElement = 
+            (
+            <select defaultValue={0} name={name} onChange={props.handleChange}>
+                <option key={0} value={0}>Filter by {name}</option>
+                {options?.map(option => <option key={option} value={option}>{`${name} ${option}`}</option>)}
+            </select>)
+        } else {
+            inputElement = 
+            (
+            <select defaultValue="" name={name} onChange={props.handleChange}>
+                <option key="0" value="">Filter by {name}</option>
+                {options?.map(option => <option key={option} value={option}>{`${name} ${option}`}</option>)}
+            </select>)
+        }
     } else {
         inputElement = <input name={name} placeholder={name} value={props.value} onChange={props.handleChange} />;
     }
