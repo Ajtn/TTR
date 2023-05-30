@@ -7,6 +7,13 @@ import {findValue, JSONValue} from "../../util/FindValue";
 import DetailedData from "./detailedData";
 import { filter, isFilter, modalField } from "./SearchTable.types";
 
+
+/*
+    todo:
+        -add error handling
+        -add unit tests
+*/
+
 type searchTableProps = {
     //name of field used as key for json being displayed in table
     id: {fieldName: string, extension: string};
@@ -28,7 +35,7 @@ type searchData = {
 export default function SearchTable(props: searchTableProps) {
     const modalFields: modalField[] = [];
 
-    const [tableData, setTableData] = useState<object[]>([]),
+    const [tableData, setTableData] = useState<JSONValue[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: modalFields});
@@ -54,16 +61,14 @@ export default function SearchTable(props: searchTableProps) {
         const tempFilters = props.filters.map((filter) => {
             const tempFilterOptions: (string | number)[] = [];
             if (filter.inputType === "select") {
-                for (const key in tableData) {
-                    const tempVal = findValue(tableData[key] as JSONValue, filter.filterName, filter.extension);
-                    if (tempVal === null)
-                        return;
-                    if (! tempFilterOptions.includes(tempVal))
+                tableData.forEach((tableEntry) => {
+                    const tempVal = findValue(tableEntry as JSONValue, filter.filterName, filter.extension);
+                    if (tempVal !== null && !tempFilterOptions.includes(tempVal))
                         tempFilterOptions.push(tempVal);
-                }
+                });
             }
             if (typeof tempFilterOptions[0] === "number")
-                tempFilterOptions.sort(numberSort);
+                (tempFilterOptions as number[]).sort(numberSort);
             else 
                 tempFilterOptions.sort();
 
@@ -86,12 +91,18 @@ export default function SearchTable(props: searchTableProps) {
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
     function initLocalData():void {
-        const tempData = [];
-        const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
-        for (const key in unsorted)
-            tempData.push(unsorted[key]);
+        const tempData: JSONValue[] = [];
+        if (props.dataSource.data) {
+            const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
+            for (const key in unsorted) {
+                if (unsorted.hasOwnProperty(key))
+                    tempData.push(unsorted[key]);
+            }
+    
+            setTableData(tempData);
+        }
+        //else error
 
-        setTableData(tempData);
     }
 
     //Fetches data from API, finds main data array based on props pathToData, then stores a key value arrray in state
@@ -110,15 +121,23 @@ export default function SearchTable(props: searchTableProps) {
                 setTableData(tempData);
             });
         }
+        //else error
     }
 
-    //takes an object and an array of field names intended to guide method to intended object
-    function followObjPath(node:{}, pathArray:string[]):{} {
+    //navigates full JSON response/object and returns array of data objects to be displayed in table
+    //pathArray is user defined array of field names for navigation
+    function followObjPath(response:JSONValue, pathArray:string[]):JSONValue[] | null {
         const pathClone = pathArray.map((pathVar) => pathVar);
-        if (pathClone.length > 1)
-            return followObjPath(node[pathClone.pop()], pathClone);
-        else
-            return node[pathClone.pop()];
+        if (pathClone.length > 1) {
+            if (pathClone[pathClone.length - 1] in (response as object))
+                return followObjPath(response[(pathClone.pop() as string)], pathClone);
+            //error state, pathArray value not a property in response
+            return null;
+        } else
+            if (pathClone.length > 0)
+                return response[(pathClone.pop() as string)];
+            //error state, pathArray value not a property in response
+            return null;
     }
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
@@ -203,10 +222,8 @@ export default function SearchTable(props: searchTableProps) {
             const tempVal = findValue(data as JSONValue, filter.filterName, filter.extension);
             if (tempVal)
                 return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
-            else
-                return false;
         });
-        return columns.filter(col => col !== false);
+        return columns.filter(col => col !== undefined);
     }
     
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
@@ -220,9 +237,11 @@ export default function SearchTable(props: searchTableProps) {
                     clickedRow = rowData;
             });
             const modalElements = props.modalConfig.map((field) => {
+                const tempVal = findValue(clickedRow, field.fieldName, field.extension? field.extension : "");
                 return {
                     ...field,
-                    value: findValue(clickedRow, field.fieldName, field.extension? field.extension : ""),
+                    value: tempVal? tempVal : "error loading",
+                    //error state
                 };
             });
             setModal({visible: true, modalElements: modalElements});

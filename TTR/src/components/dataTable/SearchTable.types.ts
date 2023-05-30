@@ -1,10 +1,10 @@
 export type filter = {
     filterName: string;
-    inputType: "textbox" | "select" | "radio";
+    inputType?: "textbox" | "select" | "radio";
     varType?: "number" | "boolean" | "string";
     extension?: string;
     scale: string;
-    filterOptions?: string[];
+    filterOptions?: (string | number)[];
 };
 
 export function isFilter(object: any): object is filter {
