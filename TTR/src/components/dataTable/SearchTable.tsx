@@ -1,9 +1,9 @@
-import React, {useState, useEffect} from "react";
-import DataRow from "./DataRow";
+import React, {useState, useEffect, MouseEventHandler, KeyboardEventHandler} from "react";
+import DataRow, {rowField} from "./DataRow";
 import FilterSelect from "./FilterSelect";
 import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
-import {findValue, JSONValue} from "../../util/FindValue";
+import {findValue, JSONValue, JSONObject} from "../../util/FindValue";
 import DetailedData from "./detailedData";
 import { filter, isFilter, modalField } from "./SearchTable.types";
 
@@ -16,7 +16,7 @@ import { filter, isFilter, modalField } from "./SearchTable.types";
 
 type searchTableProps = {
     //name of field used as key for json being displayed in table
-    id: {fieldName: string, extension: string};
+    id: {fieldName: string, extension?: string};
     filters: filter[];
     dataSource: {
         local: boolean,
@@ -78,7 +78,7 @@ export default function SearchTable(props: searchTableProps) {
     }
 
     //hides modal if escape is pressed or if x is clicked in modal
-    function closeModal(event: Event):void {
+    function closeModal(event: MouseEvent | KeyboardEvent):void {
         if (event instanceof KeyboardEvent) {
             if (event.key === "Escape") {
                 setModal((oldModal) => ({...oldModal, visible: false}));
@@ -96,6 +96,7 @@ export default function SearchTable(props: searchTableProps) {
             const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
             if (unsorted)
                 safeData = unsorted.filter((tabEntry): tabEntry is JSONValue => tabEntry !== undefined); 
+
         }
         //error state empty table
         setTableData(safeData);
@@ -122,18 +123,20 @@ export default function SearchTable(props: searchTableProps) {
 
     //navigates full JSON response/object and returns array of data objects to be displayed in table
     //pathArray is user defined array of field names for navigation
-    function followObjPath(response:JSONValue, pathArray:string[]):JSONValue[] | null {
-        const pathClone = pathArray.map((pathVar) => pathVar);
-        if (pathClone.length > 1) {
-            if (pathClone[pathClone.length - 1] in (response as object))
-                return followObjPath(response[(pathClone.pop() as string)], pathClone);
-            //error state, pathArray value not a property in response
-            return null;
-        } else
-            if (pathClone.length > 0)
-                return response[(pathClone.pop() as string)];
-            //error state, pathArray value not a property in response
-            return null;
+    function followObjPath(response:JSONObject, pathArray:string[]):JSONValue[] | null {
+        if (typeof response === "object") {
+            //create a clone array by val so as not to mutate prop array
+            const pathClone = pathArray.map((pathVar) => pathVar);
+            if (pathClone[pathClone.length - 1] in response) {
+                if (pathClone.length > 1)
+                    return followObjPath(response[(pathClone.pop() as string)], pathClone);
+                else if (pathClone.length > 0)
+                    return response[(pathClone.pop() as string)];
+            }
+
+        }
+        return null;
+        //error state path array
     }
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
@@ -213,13 +216,13 @@ export default function SearchTable(props: searchTableProps) {
 
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
-    function getRowData(data:unknown) {
+    function getRowData(data:JSONValue) {
         const columns = props.filters.map((filter) => {
-            const tempVal = findValue(data as JSONValue, filter.filterName, filter.extension);
+            const tempVal = findValue(data, filter.filterName, filter.extension);
             if (tempVal)
                 return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
         });
-        return columns.filter(col => col !== undefined);
+        return columns.filter((col): col is rowField => col !== undefined);
     }
     
     //Checks which row was clicked, loads data for that row (based on modal prop), and sets modal state with that data
@@ -251,7 +254,7 @@ export default function SearchTable(props: searchTableProps) {
         const dataElements = tableData.map((dataE) => {
             
             filters.forEach((filter) => {
-                const value = findValue(dataE as JSONValue, filter.filterName, filter.extension);
+                const value = findValue(dataE, filter.filterName, filter.extension);
                 if (filter.inputType === "select") {
                     if ((searchData.searchStrings[filter.filterName] !== "" && searchData.searchStrings[filter.filterName] !== 0) && value !== searchData.searchStrings[filter.filterName]) {
                         displayElement = false;
@@ -265,7 +268,7 @@ export default function SearchTable(props: searchTableProps) {
             });
             if (displayElement) {
                 const tableFields = getRowData(dataE);
-                const rowId = findValue(dataE as JSONValue, props.id.fieldName, props.id.extension);
+                const rowId = findValue(dataE, props.id.fieldName, props.id.extension);
                 return <DataRow key={rowId} id={rowId as string} dataForDisplay={tableFields} handleClick={rowClicked}/>
             }
             displayElement = true;

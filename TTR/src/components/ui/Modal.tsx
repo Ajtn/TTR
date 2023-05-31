@@ -6,7 +6,7 @@ type modalProps = {
         body?: React.JSX.Element[],
         footer?: React.JSX.Element[]
     };
-    closeFunction: (event: MouseEventHandler<HTMLDivElement>) => void;
+    closeFunction: (event: MouseEvent) => void;
 };
 
 export default function Modal(props: modalProps):React.JSX.Element {

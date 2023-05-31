@@ -3,7 +3,7 @@ export type filter = {
     inputType?: "textbox" | "select" | "radio";
     varType?: "number" | "boolean" | "string";
     extension?: string;
-    scale: string;
+    scale: "small" | "medium" | "large" | "xLarge";
     filterOptions?: (string | number)[];
 };
 
@@ -19,6 +19,6 @@ export type modalField = {
     displayAs: string;
     modalSection: string;
     extension?: string;
-    value?: string;
+    value: string | number;
 };
 

@@ -1,7 +1,13 @@
 import React from "react";
 
+export type rowField = {
+    name: string;
+    value: string | number;
+    sizeTag: "small" | "medium" | "large" | "xLarge"
+};
+
 type dataRowProps = {
-    dataForDisplay: {name: string, value: string | number, sizeTag: string}[];
+    dataForDisplay: rowField[];
     handleClick: (event: React.MouseEvent) => void;
     id: string;
 };

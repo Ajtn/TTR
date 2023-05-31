@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function NavIcon(props) {
+export default function NavIcon(props: {name: string, image: string, expanded: boolean, handleClick: (event: React.UIEvent) => void}) {
 
     return (
         <div onClick={props.handleClick} className={`navicon-${props.name} navicon`}>

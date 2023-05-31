@@ -9,7 +9,7 @@ type filterSelectProps = {
     value: string | number;
     handleChange: (event: React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLInputElement>) => void;
     sort: (event: React.MouseEvent<HTMLImageElement>) => void;
-    selected?: {fieldName: string, extension: string, invert: boolean};
+    selected?: {fieldName: string, extension?: string, invert: boolean};
 };
 
 export default function FilterSelect(props: filterSelectProps) {

@@ -2,26 +2,23 @@ import React, {useState} from "react";
 import SearchTable from "./components/dataTable/SearchTable";
 import dataDump from "./assets/dataDump";
 import Navbar from "./components/ui/Navbar";
+import { filter, modalField } from "./components/dataTable/SearchTable.types";
 
-/*
-  Todo:
-    -create .d.ts file and make consistent object types for filters and displayed data
-    -
-*/
 
 function App() {
 
   const [openNav, setOpenNav] = useState({clickOpen: false, mouseOpen: false});
 
-  const filterOptions = [
-    {filterName: "name", inputType: "textBox", scale: "medium"},
+
+  const filterOptions: filter[] = [
+    {filterName: "name", inputType: "textbox", scale: "medium"},
     {filterName: "spellType", inputType: "select", extension: "value", scale: "medium"},
     {filterName: "level", inputType: "select", varType: "number", extension: "value", scale: "small"},
     {filterName: "school", inputType: "select", extension: "value", scale: "large"},
     {filterName: "source", inputType: "select", extension: "value", scale: "xLarge"}
   ];
 
-  const modalFields = [
+  const modalFields: modalField[] = [
     {fieldName: "name", displayAs: "h2", modalSection: "head"},
     {fieldName: "description", displayAs: "p", extension: "value", modalSection: "body"},
   ];
@@ -55,8 +52,8 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar handleClick={(expandNav)} mouseOn={expandNav} mouseOff={expandNav} navState={openNav.mouseOpen || openNav.clickOpen} />
-      <SearchTable id={{fieldName: "_id", extension: false}} filters={filterOptions} dataSource={localData} modalConfig={modalFields} />
+      <Navbar handleChange={(expandNav)} navState={openNav.mouseOpen || openNav.clickOpen} />
+      <SearchTable id={{fieldName: "_id"}} filters={filterOptions} dataSource={localData} modalConfig={modalFields} />
     </div>
   )
 }
