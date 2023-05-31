@@ -28,7 +28,7 @@ type searchTableProps = {
 };
 
 type searchData = {
-    orderBy?: {fieldName: string, extension: string, invert: boolean};
+    orderBy: {fieldName: string, extension?: string, invert: boolean};
     searchStrings: {[fieldName: string]:string | number};
 };
 
@@ -91,18 +91,14 @@ export default function SearchTable(props: searchTableProps) {
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
     function initLocalData():void {
-        const tempData: JSONValue[] = [];
+        let safeData: JSONValue[] = [];
         if (props.dataSource.data) {
             const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
-            for (const key in unsorted) {
-                if (unsorted.hasOwnProperty(key))
-                    tempData.push(unsorted[key]);
-            }
-    
-            setTableData(tempData);
+            if (unsorted)
+                safeData = unsorted.filter((tabEntry): tabEntry is JSONValue => tabEntry !== undefined); 
         }
-        //else error
-
+        //error state empty table
+        setTableData(safeData);
     }
 
     //Fetches data from API, finds main data array based on props pathToData, then stores a key value arrray in state
@@ -111,14 +107,14 @@ export default function SearchTable(props: searchTableProps) {
             fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
             .then((res) => res.json())
             .then((data) => {
-                const tempData = [];
-                const unsorted = followObjPath(data, props.dataSource.pathToData);
-                for (const key in unsorted)
-                    tempData.push(unsorted[key]);
-    
-                console.log("temp data in api call");
-                console.log(tempData);
-                setTableData(tempData);
+                let safeData: JSONValue[] = [];
+                if (props.dataSource.data) {
+                    const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
+                    if (unsorted)
+                        safeData = unsorted.filter((tabEntry): tabEntry is JSONValue => tabEntry !== undefined); 
+                }
+                //error state empty table
+                setTableData(safeData);
             });
         }
         //else error
@@ -142,7 +138,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData():searchData {
-        const searchCategories: searchData = {searchStrings: {}};
+        const searchCategories: searchData = {orderBy: {fieldName:"", invert: false},searchStrings: {}};
         props.filters.forEach((filter) => {
             if (filter.varType === "number")
                 return searchCategories.searchStrings[filter.filterName] = 0;
@@ -171,7 +167,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //sorts tableData by filter stored in searchData (modified by clicking icon next to filter)
     function sortTable():void {
-        if (searchData.orderBy) {
+        if (searchData.orderBy !== undefined) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
                     const xVal = findValue(x as JSONValue, searchData.orderBy.fieldName, searchData.orderBy?.extension);

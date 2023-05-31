@@ -7,12 +7,34 @@ interface JSONObject {
     [index: string]: JSONValue;
 };
 
+// export function findValue(node: JSONValue, target: string, extension?: string):string | null | number {
+//     if (typeof node === "object") {
+//         for (const key in node) {
+//             if (typeof key === "string") {
+//                 if (key === target) {
+//                     return extension ? node[key][extension] : node[key];
+//                 } else {
+//                     if (typeof node[key] === "object") {
+//                         const val = findValue(node[key], target, extension);
+//                         if (val) {
+//                             return val;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return null;
+// }
+
 export function findValue(node: JSONValue, target: string, extension?: string):string | null | number {
     if (typeof node === "object") {
         for (const key in node) {
             if (typeof key === "string") {
                 if (key === target) {
-                    return extension ? node[key][extension] : node[key];
+                    const result = extension ? node[key][extension] : node[key];
+                    if (typeof result === "string" || typeof result === "number")
+                        return result;
                 } else {
                     if (typeof node[key] === "object") {
                         const val = findValue(node[key], target, extension);
