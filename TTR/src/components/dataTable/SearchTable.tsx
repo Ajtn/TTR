@@ -3,7 +3,7 @@ import DataRow, {rowField} from "./DataRow";
 import FilterSelect from "./FilterSelect";
 import Modal from "../ui/Modal";
 import numberSort from "../../util/NumberSort";
-import {findValue, JSONValue, JSONObject} from "../../util/FindValue";
+import {findValue, JSONValue, JSONObject, isJSONObject} from "../../util/FindValue";
 import DetailedData from "./detailedData";
 import { filter, isFilter, modalField } from "./SearchTable.types";
 
@@ -126,12 +126,18 @@ export default function SearchTable(props: searchTableProps) {
     function followObjPath(response:JSONObject, pathArray:string[]):JSONValue[] | null {
         if (typeof response === "object") {
             //create a clone array by val so as not to mutate prop array
-            const pathClone = pathArray.map((pathVar) => pathVar);
-            if (pathClone[pathClone.length - 1] in response) {
-                if (pathClone.length > 1)
-                    return followObjPath(response[(pathClone.pop() as string)], pathClone);
-                else if (pathClone.length > 0)
-                    return response[(pathClone.pop() as string)];
+            const pathClone = [...pathArray];
+            const responseKeys = Object.keys(response);
+            if (responseKeys.includes(pathClone[pathClone.length - 1]) && response[(pathClone[pathClone.length - 1] as string)]) {        
+                if (pathClone.length > 1) {
+                    const tempNode = response[(pathClone.pop() as string)];
+                    if (isJSONObject(tempNode))
+                        return followObjPath(tempNode, pathClone);
+                } else if (pathClone.length > 0) {
+                    const tempResult = response[(pathClone.pop() as string)]
+                    if (Array.isArray(tempResult))
+                        return tempResult;
+                }
             }
 
         }
