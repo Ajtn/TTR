@@ -8,8 +8,11 @@ export interface JSONObject {
 };
 
 export function isJSONObject(object: any): object is JSONObject {
-    const objKeys = Object.keys(object);
-    return objKeys.some(key => !isJSONValue(object.key));
+    if (object && typeof object === "object") {
+        const objKeys = Object.keys(object);
+        return objKeys.some(key => !isJSONValue(object.key));
+    }
+    return false;
 } 
 
 function isJSONValue(object: any): object is JSONValue {
@@ -20,22 +23,26 @@ function isJSONValue(object: any): object is JSONValue {
     return false;
 }
 
-export function findValue(node: JSONValue, target: string, extension?: string):string | null | number {
-    if (typeof node === "object") {
-        for (const key in node) {
-            if (typeof key === "string") {
-                if (key === target) {
-                    const result = extension ? node[key][extension] : node[key];
-                    if (typeof result === "string" || typeof result === "number")
-                        return result;
-                } else {
-                    if (typeof node[key] === "object") {
-                        const val = findValue(node[key], target, extension);
-                        if (val) {
-                            return val;
-                        }
-                    }
+
+export function findValue(node: JSONObject, target: string, extension?: string):string | number | null {
+    for (const key in node) {
+        if (key === target) {
+            if (! extension && typeof node[target] === "string" || typeof node[target] === "number") {
+                return (node[target] as string | number);
+            }
+            if (extension && isJSONObject(node[target]) && Object.keys(node[target]).includes(extension)) {
+                const tempVal = (node[target] as JSONObject)[extension];
+                if (typeof tempVal === "string" || typeof tempVal === "number")
+                    return tempVal;
+                else {
+                    console.log("bad type");
                 }
+            }
+        } else {
+            if (isJSONObject(node[key])) {
+                const temp = findValue((node[key] as JSONObject), target, extension);
+                if (temp)
+                    return temp;
             }
         }
     }

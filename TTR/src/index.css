@@ -75,7 +75,7 @@ tr.data-row:hover{
 }
 
 .modal-shell {
-  position: absolute;
+  position: fixed;
   background-color: rgb(231, 180, 143);
   left: 20%;
   top: 20%;

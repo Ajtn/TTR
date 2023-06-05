@@ -35,7 +35,7 @@ type searchData = {
 export default function SearchTable(props: searchTableProps) {
     const modalFields: modalField[] = [];
 
-    const [tableData, setTableData] = useState<JSONValue[]>([]),
+    const [tableData, setTableData] = useState<JSONObject[]>([]),
     [filters, setFilters] = useState<filter[]>([]),
     [searchData, setSearchData] = useState(initSearchData),
     [modal, setModal] = useState({visible: false, modalElements: modalFields});
@@ -62,7 +62,7 @@ export default function SearchTable(props: searchTableProps) {
             const tempFilterOptions: (string | number)[] = [];
             if (filter.inputType === "select") {
                 tableData.forEach((tableEntry) => {
-                    const tempVal = findValue(tableEntry as JSONValue, filter.filterName, filter.extension);
+                    const tempVal = findValue(tableEntry as JSONObject, filter.filterName, filter.extension);
                     if (tempVal !== null && !tempFilterOptions.includes(tempVal))
                         tempFilterOptions.push(tempVal);
                 });
@@ -91,11 +91,11 @@ export default function SearchTable(props: searchTableProps) {
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
     function initLocalData():void {
-        let safeData: JSONValue[] = [];
+        let safeData: JSONObject[] = [];
         if (props.dataSource.data) {
             const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
             if (unsorted)
-                safeData = unsorted.filter((tabEntry): tabEntry is JSONValue => tabEntry !== undefined); 
+                safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
 
         }
         //error state empty table
@@ -108,11 +108,11 @@ export default function SearchTable(props: searchTableProps) {
             fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
             .then((res) => res.json())
             .then((data) => {
-                let safeData: JSONValue[] = [];
+                let safeData: JSONObject[] = [];
                 if (props.dataSource.data) {
                     const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
                     if (unsorted)
-                        safeData = unsorted.filter((tabEntry): tabEntry is JSONValue => tabEntry !== undefined); 
+                        safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
                 }
                 //error state empty table
                 setTableData(safeData);
@@ -157,7 +157,6 @@ export default function SearchTable(props: searchTableProps) {
         return searchCategories;
     }
 
-
     function updateSearch(event: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>): void {
         setSearchData((oldSearch) => {
             let tempSearch = oldSearch.searchStrings;
@@ -179,8 +178,8 @@ export default function SearchTable(props: searchTableProps) {
         if (searchData.orderBy !== undefined) {
             setTableData((oldData) => {
                 oldData.sort((x, y) => {
-                    const xVal = findValue(x as JSONValue, searchData.orderBy.fieldName, searchData.orderBy?.extension);
-                    const yVal = findValue(y as JSONValue, searchData.orderBy.fieldName, searchData.orderBy?.extension);
+                    const xVal = findValue(x as JSONObject, searchData.orderBy.fieldName, searchData.orderBy?.extension);
+                    const yVal = findValue(y as JSONObject, searchData.orderBy.fieldName, searchData.orderBy?.extension);
                     if (typeof xVal === "string" && typeof yVal === "string")
                         return xVal.localeCompare(yVal);
                     else if (typeof xVal === "number" && typeof yVal === "number") {
@@ -219,10 +218,9 @@ export default function SearchTable(props: searchTableProps) {
 
     }
 
-
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
-    function getRowData(data:JSONValue) {
+    function getRowData(data:JSONObject) {
         const columns = props.filters.map((filter) => {
             const tempVal = findValue(data, filter.filterName, filter.extension);
             if (tempVal)
@@ -238,7 +236,7 @@ export default function SearchTable(props: searchTableProps) {
             const rowId = tempNode.parentElement?.classList[0];
             let clickedRow = {};
             tableData.some((rowData) => {
-                if (findValue(rowData as JSONValue, props.id.fieldName, props.id.extension) === rowId)
+                if (findValue(rowData as JSONObject, props.id.fieldName, props.id.extension) === rowId)
                     clickedRow = rowData;
             });
             const modalElements = props.modalConfig.map((field) => {
