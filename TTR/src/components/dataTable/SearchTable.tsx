@@ -1,10 +1,9 @@
 import React, {useState, useEffect, MouseEventHandler, KeyboardEventHandler} from "react";
 import DataRow, {rowField} from "./DataRow";
 import FilterSelect from "./FilterSelect";
-import Modal from "../ui/Modal";
+import Modal from "./DetailedDataModal";
 import numberSort from "../../util/NumberSort";
 import {findValue, JSONValue, JSONObject, isJSONObject} from "../../util/FindValue";
-import DetailedData from "./detailedData";
 import { filter, isFilter, modalField } from "./SearchTable.types";
 
 
@@ -299,17 +298,14 @@ export default function SearchTable(props: searchTableProps) {
 
         }
     }
-    let modalElements = {};
-    if (modal.visible) {
-        modalElements = DetailedData(modal.modalElements);
-    }
+
     return (
         <>
             <table className="searchTable">
                 <thead><tr className="filter-row">{tHead}</tr></thead>
                 {tBody}
             </ table>
-            {modal.visible && <Modal modalContent={modalElements} closeFunction={closeModal}/>}
+            {modal.visible && <Modal modalData={modal.modalElements} closeFunction={closeModal}/>}
         </>
     )
 }
