@@ -1,4 +1,4 @@
-import React, {useState, useEffect, MouseEventHandler, KeyboardEventHandler} from "react";
+import React, {useState, useEffect} from "react";
 import DataRow, {rowField} from "./DataRow";
 import FilterSelect from "./FilterSelect";
 import Modal from "./DetailedDataModal";
@@ -11,9 +11,10 @@ import { filter, isFilter, modalField } from "./SearchTable.types";
     todo:
         -add error handling
         -add unit tests
+        -new functionality to get sample response and let users click which fields to make columns
 */
 
-type searchTableProps = {
+export type searchTableProps = {
     //name of field used as key for json being displayed in table
     id: {fieldName: string, extension?: string};
     filters: filter[];

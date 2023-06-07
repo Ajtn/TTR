@@ -6,8 +6,9 @@ import chip from '../../assets/chip.png'
 import page from '../../assets/page.png'
 
 type navbarProps = {
-    handleChange: (event: React.MouseEvent | React.KeyboardEvent) => void;
+    expandNav: (event: React.MouseEvent | React.KeyboardEvent) => void;
     navState: boolean;
+    navigate: (iconIndex: number) => void;
 };
 
 export default function Navbar(props: navbarProps) {
@@ -18,11 +19,7 @@ export default function Navbar(props: navbarProps) {
         {name: "Ability List", image: "chip", expanded: false}
     ];
 
-    function loadContent(event: React.UIEvent):void {
-        //todo: add in logic to change app based on icon clicked
-    }
-
-    const body = navOptions.map((option) => {
+    const body = navOptions.map((option, key) => {
         let icon = book;
         switch (option.image) {
             case "book":
@@ -35,13 +32,13 @@ export default function Navbar(props: navbarProps) {
                 icon = page;
                 break;
         }
-        return (<NavIcon key={option.name} name={option.name} image={icon} expanded={props.navState} handleClick={loadContent}/>);
+        return (<NavIcon key={option.name} index={key} name={option.name} image={icon} expanded={props.navState} handleClick={props.navigate}/>);
     });
 
     return (
         <nav className={props.navState ? "expanded-nav primary-nav" : "hidden-nav primary-nav"} >
-            <div className="toggle-nav"><img onClick={props.handleChange} src={minIcon} alt="expand icon" width={25}/></div>
-            <div className='nav-main' onMouseEnter={props.handleChange} onMouseLeave={props.handleChange}>{body}</div>
+            <div className="toggle-nav"><img onClick={props.expandNav} src={minIcon} alt="expand icon" width={25}/></div>
+            <div className='nav-main' onMouseEnter={props.expandNav} onMouseLeave={props.expandNav}>{body}</div>
         </nav>
     )
 

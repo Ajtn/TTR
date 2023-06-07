@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import SearchTable from "./components/dataTable/SearchTable";
+import SearchTable, {searchTableProps} from "./components/dataTable/SearchTable";
 import dataDump from "./assets/dataDump";
 import Navbar from "./components/ui/Navbar";
 import { filter, modalField } from "./components/dataTable/SearchTable.types";
@@ -7,9 +7,12 @@ import { filter, modalField } from "./components/dataTable/SearchTable.types";
 
 function App() {
 
-  const [openNav, setOpenNav] = useState({clickOpen: false, mouseOpen: false});
+  const [openNav, setOpenNav] = useState({clickOpen: false, mouseOpen: false}),
+  [currentApp, setCurrentApp] = useState(0);
 
 
+
+  //filter settings for pathfinder spell API
   const filterOptions: filter[] = [
     {filterName: "name", inputType: "textbox", scale: "medium"},
     {filterName: "spellType", inputType: "select", extension: "value", scale: "medium"},
@@ -42,6 +45,15 @@ function App() {
     local: true, data: dataDump, pathToData:["results"]
   };
 
+  switch (currentApp) {
+    case 0: 
+  }
+
+  //set which app is running by clicking navbar section
+  function changeApp(iconIndex: number) {
+    setCurrentApp(iconIndex);
+  }
+
   //Logic for navbar to expand and contract, mouse over logic overridden if expand clicked
   function expandNav(event: React.MouseEvent | React.KeyboardEvent): void {
     if (event.type === "click")
@@ -52,7 +64,7 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar handleChange={(expandNav)} navState={openNav.mouseOpen || openNav.clickOpen} />
+      <Navbar expandNav={(expandNav)} navState={openNav.mouseOpen || openNav.clickOpen} navigate={changeApp} />
       <SearchTable id={{fieldName: "_id"}} filters={filterOptions} dataSource={localData} modalConfig={modalFields} />
     </div>
   )
