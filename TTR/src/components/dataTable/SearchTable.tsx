@@ -12,19 +12,22 @@ import { filter, isFilter, modalField } from "./SearchTable.types";
         -add error handling
         -add unit tests
         -new functionality to get sample response and let users click which fields to make columns
+        -break API url into modular chunks (domain name, directory, queries)
 */
 
 export type searchTableProps = {
-    //name of field used as key for json being displayed in table
-    id: {fieldName: string, extension?: string};
-    filters: filter[];
-    dataSource: {
-        local: boolean,
-        api?: {url: string, requestConfig: {method: string, headers: {}}},
-        data?: {},
-        pathToData: string[]
+    tableConfig: {
+        //name of field used as key for json being displayed in table
+        id: {fieldName: string, extension?: string};
+        filters: filter[];
+        dataSource: {
+            local: boolean,
+            api?: {baseUrl: string, requestConfig: {method: string, headers?: {}}},
+            data?: {},
+            pathToData: string[]
+        };
+        modalConfig: modalField[];
     };
-    modalConfig: modalField[];
 };
 
 type searchData = {
@@ -33,6 +36,7 @@ type searchData = {
 };
 
 export default function SearchTable(props: searchTableProps) {
+    const {id: id, filters: propFilters, dataSource: dataSource, modalConfig: modalConfig} = props.tableConfig;
     const modalFields: modalField[] = [];
 
     const [tableData, setTableData] = useState<JSONObject[]>([]),
@@ -41,10 +45,10 @@ export default function SearchTable(props: searchTableProps) {
     [modal, setModal] = useState({visible: false, modalElements: modalFields});
 
    //initialise tableData state object based on either local data or API
-    props.dataSource.local ? useEffect(initLocalData, []) : useEffect(callApi, []);
+    dataSource.local ? useEffect(initLocalData, [dataSource]) : useEffect(callApi, [dataSource]);
     useEffect(initFilters, [tableData, searchData.orderBy]);
     //create event listener to check for keypress to close modal
-    useEffect(initKeyListener, []);
+    useEffect(initKeyListener, [tableData]);
 
     useEffect(sortTable, [searchData.orderBy]);
 
@@ -58,7 +62,7 @@ export default function SearchTable(props: searchTableProps) {
     //initialise filter state object based on fields chosen in filters prop and unique values associated with those fields found in data source
     //ie any filters set to select will have options defined by unique values found in data 
     function initFilters():void {
-        const tempFilters = props.filters.map((filter) => {
+        const tempFilters = propFilters.map((filter) => {
             const tempFilterOptions: (string | number)[] = [];
             if (filter.inputType === "select") {
                 tableData.forEach((tableEntry) => {
@@ -90,30 +94,30 @@ export default function SearchTable(props: searchTableProps) {
 
     //finds main data array in provided local data given appropriate path
     //sets tableData state with array of that data organised with IDs as keys
-    function initLocalData():void {
+    function initLocalData() {
         let safeData: JSONObject[] = [];
-        if (props.dataSource.data) {
-            const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
+        if (dataSource.data) {
+            const unsorted = followObjPath(dataSource.data, dataSource.pathToData);
             if (unsorted)
                 safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
 
         }
         //error state empty table
         setTableData(safeData);
+        setSearchData(initSearchData);
     }
 
     //Fetches data from API, finds main data array based on props pathToData, then stores a key value arrray in state
     function callApi():void {
-        if (typeof props.dataSource.api !== "undefined") {
-            fetch(props.dataSource.api.url, props.dataSource.api.requestConfig)
+        if (typeof dataSource.api !== "undefined") {
+            fetch(dataSource.api.baseUrl, dataSource.api.requestConfig)
             .then((res) => res.json())
             .then((data) => {
+                console.log("data:",data);
                 let safeData: JSONObject[] = [];
-                if (props.dataSource.data) {
-                    const unsorted = followObjPath(props.dataSource.data, props.dataSource.pathToData);
-                    if (unsorted)
-                        safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
-                }
+                const unsorted = followObjPath(data, dataSource.pathToData);
+                if (unsorted)
+                    safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
                 //error state empty table
                 setTableData(safeData);
             });
@@ -148,7 +152,7 @@ export default function SearchTable(props: searchTableProps) {
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData():searchData {
         const searchCategories: searchData = {orderBy: {fieldName:"", invert: false},searchStrings: {}};
-        props.filters.forEach((filter) => {
+        propFilters.forEach((filter) => {
             if (filter.varType === "number")
                 return searchCategories.searchStrings[filter.filterName] = 0;
             else
@@ -198,7 +202,7 @@ export default function SearchTable(props: searchTableProps) {
     //sets orderBy which is a dependancy for orderBy function
     function setOrder(event: React.MouseEvent<HTMLImageElement>):void {
         let tempNode = event.target as HTMLElement;
-        const chosenFilter = props.filters.find((filter) => {
+        const chosenFilter = propFilters.find((filter) => {
             if (filter.filterName === tempNode.parentElement?.classList[0])
                 return filter;
         });
@@ -221,7 +225,7 @@ export default function SearchTable(props: searchTableProps) {
     //Get names of data fields to be displayed on table based on filter props
     //ie defines what the rows in the table will be
     function getRowData(data:JSONObject) {
-        const columns = props.filters.map((filter) => {
+        const columns = propFilters.map((filter) => {
             const tempVal = findValue(data, filter.filterName, filter.extension);
             if (tempVal)
                 return {name: filter.filterName, value: tempVal, sizeTag: filter.scale};
@@ -236,10 +240,10 @@ export default function SearchTable(props: searchTableProps) {
             const rowId = tempNode.parentElement?.classList[0];
             let clickedRow = {};
             tableData.some((rowData) => {
-                if (findValue(rowData as JSONObject, props.id.fieldName, props.id.extension) === rowId)
+                if (findValue(rowData as JSONObject, id.fieldName, id.extension) === rowId)
                     clickedRow = rowData;
             });
-            const modalElements = props.modalConfig.map((field) => {
+            const modalElements = modalConfig.map((field) => {
                 const tempVal = findValue(clickedRow, field.fieldName, field.extension? field.extension : "");
                 return {
                     ...field,
@@ -265,14 +269,18 @@ export default function SearchTable(props: searchTableProps) {
                     }
                 } else {
                     if (typeof value === "string") {
-                        if (!value.toUpperCase().match((searchData.searchStrings[filter.filterName] as string).toUpperCase()))
-                            displayElement = false;
+                        //temporarily turned off filter due to bug with shared field names
+                        // if (!value.toUpperCase().match((searchData.searchStrings[filter.filterName] as string).toUpperCase()))
+                        //     displayElement = false;
                     }
                 }
             });
             if (displayElement) {
                 const tableFields = getRowData(dataE);
-                const rowId = findValue(dataE, props.id.fieldName, props.id.extension);
+                const rowId = findValue(dataE, id.fieldName, id.extension);
+                if (rowId === null) {
+                    return false;
+                }
                 return <DataRow key={rowId} id={rowId as string} dataForDisplay={tableFields} handleClick={rowClicked}/>
             }
             displayElement = true;
