@@ -17,6 +17,7 @@ import { filter, isFilter, modalField } from "./SearchTable.types";
 
 export type searchTableProps = {
     tableConfig: {
+        activeApp: number;
         //name of field used as key for json being displayed in table
         id: {fieldName: string, extension?: string};
         filters: filter[];
@@ -31,12 +32,13 @@ export type searchTableProps = {
 };
 
 type searchData = {
+    activeApp: number;
     orderBy: {fieldName: string, extension?: string, invert: boolean};
     searchStrings: {[fieldName: string]:string | number};
 };
 
 export default function SearchTable(props: searchTableProps) {
-    const {id: id, filters: propFilters, dataSource: dataSource, modalConfig: modalConfig} = props.tableConfig;
+    const {activeApp: activeApp,id: id, filters: propFilters, dataSource: dataSource, modalConfig: modalConfig} = props.tableConfig;
     const modalFields: modalField[] = [];
 
     const [tableData, setTableData] = useState<JSONObject[]>([]),
@@ -120,6 +122,7 @@ export default function SearchTable(props: searchTableProps) {
                     safeData = unsorted.filter((tabEntry): tabEntry is JSONObject => tabEntry !== undefined); 
                 //error state empty table
                 setTableData(safeData);
+                setSearchData(initSearchData);
             });
         }
         //else error
@@ -151,7 +154,7 @@ export default function SearchTable(props: searchTableProps) {
 
     //creates an object to reflect each filter chosen in props to prevent undefined values being checked
     function initSearchData():searchData {
-        const searchCategories: searchData = {orderBy: {fieldName:"", invert: false},searchStrings: {}};
+        const searchCategories: searchData = {activeApp: activeApp, orderBy: {fieldName:"", invert: false},searchStrings: {}};
         propFilters.forEach((filter) => {
             if (filter.varType === "number")
                 return searchCategories.searchStrings[filter.filterName] = 0;
@@ -260,21 +263,22 @@ export default function SearchTable(props: searchTableProps) {
     function tableBody() {
         let displayElement = true;
         const dataElements = tableData.map((dataE) => {
-            
-            filters.forEach((filter) => {
-                const value = findValue(dataE, filter.filterName, filter.extension);
-                if (filter.inputType === "select") {
-                    if ((searchData.searchStrings[filter.filterName] !== "" && searchData.searchStrings[filter.filterName] !== 0) && value !== searchData.searchStrings[filter.filterName]) {
-                        displayElement = false;
+            if (searchData.activeApp === activeApp) {
+                filters.forEach((filter) => {
+                    const value = findValue(dataE, filter.filterName, filter.extension);
+                    if (filter.inputType === "select") {
+                        if ((searchData.searchStrings[filter.filterName] !== "" && searchData.searchStrings[filter.filterName] !== 0) && value !== searchData.searchStrings[filter.filterName]) {
+                            displayElement = false;
+                        }
+                    } else {
+                        if (typeof value === "string") {
+                            if (!value.toUpperCase().match((searchData.searchStrings[filter.filterName] as string).toUpperCase()))
+                                displayElement = false;
+                        }
                     }
-                } else {
-                    if (typeof value === "string") {
-                        //temporarily turned off filter due to bug with shared field names
-                        // if (!value.toUpperCase().match((searchData.searchStrings[filter.filterName] as string).toUpperCase()))
-                        //     displayElement = false;
-                    }
-                }
-            });
+                });
+            }
+
             if (displayElement) {
                 const tableFields = getRowData(dataE);
                 const rowId = findValue(dataE, id.fieldName, id.extension);

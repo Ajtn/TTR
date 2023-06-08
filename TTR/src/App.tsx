@@ -75,7 +75,7 @@ function App() {
 
   const allTableConfig = [
     {id: {fieldName: "_id"}, filters: pfSpellFilters, dataSource: pfLocalData, modalConfig: pfSpellModal},
-    {id: {fieldName: "id"}, filters: eldenItemsFilters, dataSource: eRLocalData, modalConfig: eldenItemsModal}
+    {id: {fieldName: "id"}, filters: eldenItemsFilters, dataSource: eldenItemsApi, modalConfig: eldenItemsModal}
   ];
 
   //set which app is running by clicking navbar section
@@ -96,7 +96,7 @@ function App() {
   return (
     <div className="App">
       <Navbar expandNav={(expandNav)} navState={openNav.mouseOpen || openNav.clickOpen} navigate={changeApp} />
-      <SearchTable tableConfig={allTableConfig[currentApp]} />
+      <SearchTable tableConfig={{activeApp: currentApp,...allTableConfig[currentApp]}} />
     </div>
   )
 }
